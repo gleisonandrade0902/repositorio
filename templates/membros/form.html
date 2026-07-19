@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}{% if membro %}Editar Membro{% else %}Novo Membro{% endif %} - GeSUAS Local{% endblock %}
+{% block content %}
+<h1>{% if membro %}Editar Membro{% else %}Novo Membro da Família {{ familia.prontuario_familiar }}{% endif %}</h1>
+
+<form method="post">
+  <fieldset class="fieldset">
+    <legend>Identificação Pessoal</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>Prontuário Individual</label>
+        <input type="text" name="prontuario_individual" value="{{ membro.prontuario_individual if membro else '' }}" placeholder="Automático se em branco">
+      </div>
+      <div class="field" style="grid-column:span 2">
+        <label>Nome Completo *</label>
+        <input type="text" name="nome_completo" required value="{{ membro.nome_completo if membro else '' }}">
+      </div>
+      <div class="field" style="grid-column:span 2">
+        <label>Nome Social</label>
+        <input type="text" name="nome_social" value="{{ membro.nome_social if membro else '' }}">
+      </div>
+      <div class="field">
+        <label>Parentesco / Referência Familiar</label>
+        <select name="parentesco">
+          {% set parentescos = ['','Responsável Familiar','Cônjuge/Companheiro(a)','Filho(a)','Enteado(a)','Neto(a)','Pai','Mãe','Sogro(a)','Irmão(ã)','Agregado(a)','Outro'] %}
+          {% for p in parentescos %}
+          <option value="{{ p }}" {% if membro and membro.parentesco == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Data de Nascimento</label>
+        <input type="date" name="data_nascimento" value="{{ (membro.data_nascimento if membro else '')|string }}">
+      </div>
+      <div class="field">
+        <label>Sexo</label>
+        <select name="sexo">
+          {% for s in ['','Feminino','Masculino','Intersexo','Não informado'] %}
+          <option value="{{ s }}" {% if membro and membro.sexo == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Identidade de Gênero</label>
+        <input type="text" name="identidade_genero" value="{{ membro.identidade_genero if membro else '' }}">
+      </div>
+      <div class="field">
+        <label>Raça / Cor</label>
+        <select name="raca_cor">
+          {% for r in ['','Branca','Preta','Parda','Amarela','Indígena','Não declarada'] %}
+          <option value="{{ r }}" {% if membro and membro.raca_cor == r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Estado Civil</label>
+        <select name="estado_civil">
+          {% for e in ['','Solteiro(a)','Casado(a)','União Estável','Separado(a)','Divorciado(a)','Viúvo(a)'] %}
+          <option value="{{ e }}" {% if membro and membro.estado_civil == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Nacionalidade</label>
+        <input type="text" name="nacionalidade" value="{{ membro.nacionalidade if membro else 'Brasileira' }}">
+      </div>
+      <div class="field">
+        <label>Naturalidade (Cidade)</label>
+        <input type="text" name="naturalidade_cidade" value="{{ membro.naturalidade_cidade if membro else '' }}">
+      </div>
+      <div class="field">
+        <label>UF Naturalidade</label>
+        <input type="text" name="naturalidade_uf" maxlength="2" value="{{ membro.naturalidade_uf if membro else '' }}">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Documentação</legend>
+    <div class="grid grid-3">
+      <div class="field"><label>CPF</label><input type="text" name="cpf" value="{{ membro.cpf if membro else '' }}"></div>
+      <div class="field"><label>RG</label><input type="text" name="rg" value="{{ membro.rg if membro else '' }}"></div>
+      <div class="field"><label>Órgão Emissor</label><input type="text" name="rg_orgao_emissor" value="{{ membro.rg_orgao_emissor if membro else '' }}"></div>
+      <div class="field"><label>NIS</label><input type="text" name="nis" value="{{ membro.nis if membro else '' }}"></div>
+      <div class="field"><label>Título de Eleitor</label><input type="text" name="titulo_eleitor" value="{{ membro.titulo_eleitor if membro else '' }}"></div>
+      <div class="field"><label>Carteira de Trabalho</label><input type="text" name="carteira_trabalho" value="{{ membro.carteira_trabalho if membro else '' }}"></div>
+      <div class="field"><label>Certidão de Nascimento</label><input type="text" name="certidao_nascimento" value="{{ membro.certidao_nascimento if membro else '' }}"></div>
+      <div class="field"><label>Certidão de Casamento</label><input type="text" name="certidao_casamento" value="{{ membro.certidao_casamento if membro else '' }}"></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Educação</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>Escolaridade</label>
+        <select name="escolaridade">
+          {% set esc = ['','Sem instrução','Ensino Fund. Incompleto','Ensino Fund. Completo','Ensino Médio Incompleto','Ensino Médio Completo','Superior Incompleto','Superior Completo','Pós-graduação'] %}
+          {% for e in esc %}<option value="{{ e }}" {% if membro and membro.escolaridade == e %}selected{% endif %}>{{ e }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field-check" style="align-self:end;padding-bottom:.6rem"><input type="checkbox" name="frequenta_escola" id="fesc" {% if membro and membro.frequenta_escola %}checked{% endif %}><label for="fesc">Frequenta escola?</label></div>
+      <div class="field"></div>
+      <div class="field" style="grid-column:span 2"><label>Nome da Escola</label><input type="text" name="nome_escola" value="{{ membro.nome_escola if membro else '' }}"></div>
+      <div class="field"><label>Série</label><input type="text" name="serie" value="{{ membro.serie if membro else '' }}"></div>
+      <div class="field"><label>Turno</label>
+        <select name="turno">
+          {% for t in ['','Matutino','Vespertino','Noturno','Integral'] %}
+          <option value="{{ t }}" {% if membro and membro.turno == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Trabalho e Renda</legend>
+    <div class="grid grid-3">
+      <div class="field"><label>Ocupação/Profissão</label><input type="text" name="ocupacao" value="{{ membro.ocupacao if membro else '' }}"></div>
+      <div class="field">
+        <label>Situação de Trabalho</label>
+        <select name="situacao_trabalho">
+          {% for t in ['','Empregado com carteira','Empregado sem carteira','Autônomo/Informal','Servidor Público','Aposentado','Pensionista','Desempregado','Do lar','Estudante','Não trabalha'] %}
+          <option value="{{ t }}" {% if membro and membro.situacao_trabalho == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Renda Individual (R$)</label><input type="text" name="renda_individual" value="{{ '%.2f'|format(membro.renda_individual or 0) if membro else '' }}"></div>
+      <div class="field" style="grid-column:span 3"><label>Origem da renda</label><input type="text" name="origem_renda" value="{{ membro.origem_renda if membro else '' }}"></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Saúde</legend>
+    <div class="grid grid-3">
+      <div class="field-check"><input type="checkbox" name="tem_deficiencia" id="tdef" {% if membro and membro.tem_deficiencia %}checked{% endif %}><label for="tdef">Possui deficiência</label></div>
+      <div class="field-check"><input type="checkbox" name="recebe_bpc" id="tbpc" {% if membro and membro.recebe_bpc %}checked{% endif %}><label for="tbpc">Recebe BPC</label></div>
+      <div class="field-check"><input type="checkbox" name="usa_medicacao_continua" id="tmed" {% if membro and membro.usa_medicacao_continua %}checked{% endif %}><label for="tmed">Uso contínuo de medicação</label></div>
+      <div class="field" style="grid-column:span 2"><label>Tipo de deficiência</label><input type="text" name="tipo_deficiencia" value="{{ membro.tipo_deficiencia if membro else '' }}"></div>
+      <div class="field"><label>CID</label><input type="text" name="cid" value="{{ membro.cid if membro else '' }}"></div>
+      <div class="field" style="grid-column:span 3"><label>Medicações</label><textarea name="medicacoes" rows="2">{{ membro.medicacoes if membro else '' }}</textarea></div>
+      <div class="field" style="grid-column:span 3"><label>Problemas de Saúde</label><textarea name="problemas_saude" rows="2">{{ membro.problemas_saude if membro else '' }}</textarea></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field-check"><input type="checkbox" name="gestante" id="tges" {% if membro and membro.gestante %}checked{% endif %}><label for="tges">Gestante</label></div>
+      <div class="field"><label>Data provável do parto</label><input type="date" name="data_provavel_parto" value="{{ (membro.data_provavel_parto if membro else '')|string }}"></div>
+      <div class="field-check"><input type="checkbox" name="lactante" id="tlac" {% if membro and membro.lactante %}checked{% endif %}><label for="tlac">Lactante</label></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Situações de Vulnerabilidade e Risco Social</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>Grupo Populacional Tradicional</label>
+        <select name="grupo_tradicional">
+          {% for g in ['','Nenhum','Indígena','Quilombola','Ribeirinho','Cigano','Extrativista','Pescador Artesanal','Assentado'] %}
+          <option value="{{ g }}" {% if membro and membro.grupo_tradicional == g %}selected{% endif %}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field-check"><input type="checkbox" name="situacao_rua" id="tsr" {% if membro and membro.situacao_rua %}checked{% endif %}><label for="tsr">Situação de rua</label></div>
+      <div class="field-check"><input type="checkbox" name="lgbtqia" id="tlgb" {% if membro and membro.lgbtqia %}checked{% endif %}><label for="tlgb">Se identifica como LGBTQIA+</label></div>
+      <div class="field-check"><input type="checkbox" name="imigrante" id="timi" {% if membro and membro.imigrante %}checked{% endif %}><label for="timi">Imigrante/Refugiado</label></div>
+      <div class="field-check"><input type="checkbox" name="trabalho_infantil" id="ttra" {% if membro and membro.trabalho_infantil %}checked{% endif %}><label for="ttra">Trabalho infantil</label></div>
+      <div class="field-check"><input type="checkbox" name="exploracao_sexual" id="texp" {% if membro and membro.exploracao_sexual %}checked{% endif %}><label for="texp">Exploração sexual</label></div>
+      <div class="field-check"><input type="checkbox" name="violencia_domestica" id="tvio" {% if membro and membro.violencia_domestica %}checked{% endif %}><label for="tvio">Violência doméstica</label></div>
+      <div class="field-check"><input type="checkbox" name="uso_substancias" id="tuso" {% if membro and membro.uso_substancias %}checked{% endif %}><label for="tuso">Uso abusivo de substâncias</label></div>
+      <div class="field-check"><input type="checkbox" name="cumpre_medida_socioeducativa" id="tmed2" {% if membro and membro.cumpre_medida_socioeducativa %}checked{% endif %}><label for="tmed2">Cumpre medida socioeducativa</label></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Contato e Observações</legend>
+    <div class="grid grid-3">
+      <div class="field"><label>Telefone</label><input type="tel" name="telefone" value="{{ membro.telefone if membro else '' }}"></div>
+      <div class="field" style="grid-column:span 2"><label>E-mail</label><input type="email" name="email" value="{{ membro.email if membro else '' }}"></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea name="observacoes" rows="3">{{ membro.observacoes if membro else '' }}</textarea></div>
+    {% if membro %}
+    <div class="field-check"><input type="checkbox" name="ativo" id="tat" {% if membro.ativo %}checked{% endif %}><label for="tat">Cadastro ativo</label></div>
+    {% else %}
+    <input type="hidden" name="ativo" value="on">
+    {% endif %}
+  </fieldset>
+
+  <div class="actions">
+    <button type="submit" class="btn">Salvar Membro</button>
+    <a href="{{ url_for('familia_detalhe', familia_id=familia.id) }}" class="btn btn-outline">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

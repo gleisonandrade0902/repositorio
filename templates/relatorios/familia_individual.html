@@ -1,0 +1,119 @@
+{% extends "relatorios/_base_rel.html" %}
+{% block titulo_rel %}Ficha Familiar — {{ familia.prontuario_familiar }}{% endblock %}
+{% block corpo %}
+<div class="card">
+  <h3>Identificação</h3>
+  <dl class="info-list">
+    <dt>Prontuário</dt><dd>{{ familia.prontuario_familiar }}</dd>
+    <dt>Data de cadastro</dt><dd>{{ familia.data_cadastro|data_br }}</dd>
+    <dt>Unidade</dt><dd>{{ familia.unidade_referencia or '—' }}</dd>
+    <dt>Técnico</dt><dd>{{ familia.tecnico_referencia or '—' }}</dd>
+    <dt>CAD Único</dt><dd>{{ familia.cad_unico or '—' }}</dd>
+    <dt>NIS Responsável</dt><dd>{{ familia.nis_responsavel or '—' }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Endereço e Moradia</h3>
+  <dl class="info-list">
+    <dt>Endereço</dt><dd>{{ familia.logradouro or '—' }}, {{ familia.numero or 's/n' }} {{ familia.complemento or '' }}</dd>
+    <dt>Bairro</dt><dd>{{ familia.bairro or '—' }}</dd>
+    <dt>Cidade/UF</dt><dd>{{ familia.cidade or '—' }}/{{ familia.uf or '' }}</dd>
+    <dt>CEP</dt><dd>{{ familia.cep or '—' }}</dd>
+    <dt>Zona</dt><dd>{{ familia.zona or '—' }}</dd>
+    <dt>Tipo Moradia</dt><dd>{{ familia.tipo_moradia or '—' }}</dd>
+    <dt>Situação</dt><dd>{{ familia.situacao_moradia or '—' }}</dd>
+    <dt>Cômodos/Dorm.</dt><dd>{{ familia.numero_comodos or '—' }} / {{ familia.numero_dormitorios or '—' }}</dd>
+    <dt>Água encanada</dt><dd>{{ familia.tem_agua_encanada|sim_nao }}</dd>
+    <dt>Esgoto</dt><dd>{{ familia.tem_esgoto|sim_nao }}</dd>
+    <dt>Energia</dt><dd>{{ familia.tem_energia_eletrica|sim_nao }}</dd>
+    <dt>Coleta lixo</dt><dd>{{ familia.tem_coleta_lixo|sim_nao }}</dd>
+    <dt>Banheiro</dt><dd>{{ familia.tem_banheiro|sim_nao }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Composição Familiar ({{ familia.total_membros }} pessoas)</h3>
+  <table>
+    <thead><tr><th>Nome</th><th>Parentesco</th><th>Idade</th><th>CPF</th><th>Escolaridade</th><th>Ocupação</th><th>Renda</th></tr></thead>
+    <tbody>
+    {% for m in familia.membros %}
+      <tr>
+        <td>{{ m.nome_completo }}</td>
+        <td>{{ m.parentesco or '—' }}</td>
+        <td>{{ m.idade if m.idade is not none else '—' }}</td>
+        <td>{{ m.cpf or '—' }}</td>
+        <td>{{ m.escolaridade or '—' }}</td>
+        <td>{{ m.ocupacao or '—' }}</td>
+        <td>{{ m.renda_individual|moeda }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Renda e Benefícios</h3>
+  <dl class="info-list">
+    <dt>Renda total</dt><dd>{{ familia.renda_familiar_total|moeda }}</dd>
+    <dt>Per capita</dt><dd>{{ familia.renda_per_capita|moeda }}</dd>
+    <dt>Bolsa Família</dt><dd>{{ familia.prog_bolsa_familia|sim_nao }} — {{ familia.valor_bolsa_familia|moeda }}</dd>
+    <dt>BPC</dt><dd>{{ familia.prog_bpc|sim_nao }}</dd>
+    <dt>Ben. Eventuais</dt><dd>{{ familia.prog_beneficios_eventuais|sim_nao }}</dd>
+    <dt>Outros</dt><dd>{{ familia.outros_programas or '—' }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Acompanhamento e vulnerabilidades</h3>
+  <p>
+    {% if familia.em_paif %}PAIF · {% endif %}
+    {% if familia.em_paefi %}PAEFI · {% endif %}
+    {% if familia.medida_socioeducativa %}Medida socioeducativa · {% endif %}
+    {% if familia.servico_convivencia %}SCFV{% endif %}
+  </p>
+  <p><strong>Vulnerabilidades:</strong> {{ familia.vulnerabilidades or '—' }}</p>
+  <p><strong>Observações:</strong> {{ familia.observacoes or '—' }}</p>
+</div>
+
+{% set atends = familia.atendimentos.all() %}
+{% if atends %}
+<div class="card">
+  <h3>Histórico de Atendimentos ({{ atends|length }})</h3>
+  <table>
+    <thead><tr><th>Data</th><th>Tipo</th><th>Membro</th><th>Técnico</th><th>Demanda</th></tr></thead>
+    <tbody>
+      {% for a in atends %}
+      <tr>
+        <td>{{ a.data_atendimento|data_br }}</td>
+        <td>{{ a.tipo_atendimento or '—' }}</td>
+        <td>{{ a.membro.nome_completo if a.membro else '—' }}</td>
+        <td>{{ a.tecnico_responsavel or '—' }}</td>
+        <td>{{ (a.demanda_apresentada or '')[:120] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% set encs = familia.encaminhamentos.all() %}
+{% if encs %}
+<div class="card">
+  <h3>Encaminhamentos ({{ encs|length }})</h3>
+  <table>
+    <thead><tr><th>Data</th><th>Órgão/Destino</th><th>Motivo</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for e in encs %}
+      <tr>
+        <td>{{ e.data_encaminhamento|data_br }}</td>
+        <td>{{ e.orgao_destino }}</td>
+        <td>{{ (e.motivo or '')[:150] }}</td>
+        <td>{{ e.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

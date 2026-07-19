@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Atendimentos - GeSUAS Local{% endblock %}
+{% block content %}
+<h1>Atendimentos</h1>
+<p style="color:var(--cinza-esc)">Últimos 300 registros. Para filtros por período, veja <a href="{{ url_for('relatorio_atendimentos') }}">Relatório de atendimentos</a>.</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Data</th><th>Família</th><th>Membro</th><th>Tipo</th><th>Técnico</th><th>Situação</th><th></th></tr></thead>
+  <tbody>
+  {% for a in atendimentos %}
+    <tr>
+      <td>{{ a.data_atendimento|data_br }}</td>
+      <td><a href="{{ url_for('familia_detalhe', familia_id=a.familia_id) }}">{{ a.familia.prontuario_familiar }}</a></td>
+      <td>{{ a.membro.nome_completo if a.membro else '—' }}</td>
+      <td>{{ a.tipo_atendimento or '—' }}</td>
+      <td>{{ a.tecnico_responsavel or '—' }}</td>
+      <td><span class="badge">{{ a.situacao }}</span></td>
+      <td><a href="{{ url_for('atendimento_editar', atendimento_id=a.id) }}" class="btn btn-sm btn-outline">Abrir</a></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7" style="text-align:center;color:var(--cinza-esc)">Nenhum atendimento registrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

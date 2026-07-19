@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}{% if familia %}Editar Família{% else %}Nova Família{% endif %} - GeSUAS Local{% endblock %}
+{% block content %}
+<h1>{% if familia %}Editar Família {{ familia.prontuario_familiar }}{% else %}Nova Família{% endif %}</h1>
+
+<form method="post">
+  <fieldset class="fieldset">
+    <legend>Identificação</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>Prontuário Familiar</label>
+        <input type="text" name="prontuario_familiar" value="{{ familia.prontuario_familiar if familia else '' }}" placeholder="Deixe em branco para gerar automaticamente">
+      </div>
+      <div class="field">
+        <label>Data de Cadastro</label>
+        <input type="date" name="data_cadastro" value="{{ (familia.data_cadastro if familia else '')|string }}">
+      </div>
+      <div class="field">
+        <label>CAD Único (NIS familiar)</label>
+        <input type="text" name="cad_unico" value="{{ familia.cad_unico if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>NIS do Responsável</label>
+        <input type="text" name="nis_responsavel" value="{{ familia.nis_responsavel if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Unidade de Referência (CRAS/CREAS)</label>
+        <input type="text" name="unidade_referencia" value="{{ familia.unidade_referencia if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Técnico de Referência</label>
+        <input type="text" name="tecnico_referencia" value="{{ familia.tecnico_referencia if familia else '' }}">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Endereço</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>CEP</label>
+        <input type="text" name="cep" value="{{ familia.cep if familia else '' }}">
+      </div>
+      <div class="field" style="grid-column:span 2">
+        <label>Logradouro</label>
+        <input type="text" name="logradouro" value="{{ familia.logradouro if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Número</label>
+        <input type="text" name="numero" value="{{ familia.numero if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Complemento</label>
+        <input type="text" name="complemento" value="{{ familia.complemento if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Bairro</label>
+        <input type="text" name="bairro" value="{{ familia.bairro if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Cidade</label>
+        <input type="text" name="cidade" value="{{ familia.cidade if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>UF</label>
+        <input type="text" name="uf" maxlength="2" value="{{ familia.uf if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Zona</label>
+        <select name="zona">
+          {% for z in ['', 'Urbana', 'Rural', 'Comunidade Tradicional', 'Área de risco'] %}
+          <option value="{{ z }}" {% if familia and familia.zona == z %}selected{% endif %}>{{ z }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" style="grid-column:span 3">
+        <label>Ponto de Referência</label>
+        <input type="text" name="ponto_referencia" value="{{ familia.ponto_referencia if familia else '' }}">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Condições de Moradia</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>Tipo de Moradia</label>
+        <select name="tipo_moradia">
+          {% for t in ['', 'Própria', 'Alugada', 'Cedida', 'Ocupada/Invadida', 'Financiada', 'Situação de rua'] %}
+          <option value="{{ t }}" {% if familia and familia.tipo_moradia == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Situação da Moradia</label>
+        <select name="situacao_moradia">
+          {% for t in ['', 'Adequada', 'Precária', 'Inadequada', 'Em construção', 'Em risco'] %}
+          <option value="{{ t }}" {% if familia and familia.situacao_moradia == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Material de Construção</label>
+        <select name="material_construcao">
+          {% for t in ['', 'Alvenaria', 'Madeira aproveitada', 'Madeira aparelhada', 'Taipa', 'Palha', 'Outro'] %}
+          <option value="{{ t }}" {% if familia and familia.material_construcao == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Nº de Cômodos</label>
+        <input type="number" name="numero_comodos" value="{{ familia.numero_comodos if familia and familia.numero_comodos is not none else '' }}">
+      </div>
+      <div class="field">
+        <label>Nº de Dormitórios</label>
+        <input type="number" name="numero_dormitorios" value="{{ familia.numero_dormitorios if familia and familia.numero_dormitorios is not none else '' }}">
+      </div>
+      <div class="field"></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field-check"><input type="checkbox" name="tem_agua_encanada" id="agua" {% if familia and familia.tem_agua_encanada %}checked{% endif %}><label for="agua">Água encanada</label></div>
+      <div class="field-check"><input type="checkbox" name="tem_esgoto" id="esg" {% if familia and familia.tem_esgoto %}checked{% endif %}><label for="esg">Esgoto sanitário</label></div>
+      <div class="field-check"><input type="checkbox" name="tem_energia_eletrica" id="ene" {% if familia and familia.tem_energia_eletrica %}checked{% endif %}><label for="ene">Energia elétrica</label></div>
+      <div class="field-check"><input type="checkbox" name="tem_coleta_lixo" id="lix" {% if familia and familia.tem_coleta_lixo %}checked{% endif %}><label for="lix">Coleta de lixo</label></div>
+      <div class="field-check"><input type="checkbox" name="tem_banheiro" id="ban" {% if familia and familia.tem_banheiro %}checked{% endif %}><label for="ban">Banheiro dentro do domicílio</label></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Renda e Benefícios</legend>
+    <div class="grid grid-3">
+      <div class="field">
+        <label>Renda Familiar Total (R$)</label>
+        <input type="text" name="renda_familiar_total" value="{{ '%.2f'|format(familia.renda_familiar_total or 0) if familia else '' }}">
+        <small style="color:var(--cinza-esc)">Recalculada com a soma das rendas individuais + Bolsa Família.</small>
+      </div>
+      <div class="field">
+        <label>Valor Bolsa Família (R$)</label>
+        <input type="text" name="valor_bolsa_familia" value="{{ '%.2f'|format(familia.valor_bolsa_familia or 0) if familia else '' }}">
+      </div>
+      <div class="field">
+        <label>Outros Programas (descrever)</label>
+        <input type="text" name="outros_programas" value="{{ familia.outros_programas if familia else '' }}">
+      </div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field-check"><input type="checkbox" name="prog_bolsa_familia" id="pbf" {% if familia and familia.prog_bolsa_familia %}checked{% endif %}><label for="pbf">Bolsa Família / Auxílio Brasil</label></div>
+      <div class="field-check"><input type="checkbox" name="prog_bpc" id="pbpc" {% if familia and familia.prog_bpc %}checked{% endif %}><label for="pbpc">BPC (LOAS)</label></div>
+      <div class="field-check"><input type="checkbox" name="prog_beneficios_eventuais" id="pbe" {% if familia and familia.prog_beneficios_eventuais %}checked{% endif %}><label for="pbe">Benefícios Eventuais</label></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend>Acompanhamento SUAS</legend>
+    <div class="grid grid-4">
+      <div class="field-check"><input type="checkbox" name="em_paif" id="paif" {% if familia and familia.em_paif %}checked{% endif %}><label for="paif">PAIF</label></div>
+      <div class="field-check"><input type="checkbox" name="em_paefi" id="paefi" {% if familia and familia.em_paefi %}checked{% endif %}><label for="paefi">PAEFI</label></div>
+      <div class="field-check"><input type="checkbox" name="medida_socioeducativa" id="mse" {% if familia and familia.medida_socioeducativa %}checked{% endif %}><label for="mse">Medida Socioeducativa</label></div>
+      <div class="field-check"><input type="checkbox" name="servico_convivencia" id="scfv" {% if familia and familia.servico_convivencia %}checked{% endif %}><label for="scfv">SCFV</label></div>
+    </div>
+    <div class="field">
+      <label>Vulnerabilidades / Riscos identificados</label>
+      <textarea name="vulnerabilidades" rows="3">{{ familia.vulnerabilidades if familia else '' }}</textarea>
+    </div>
+    <div class="field">
+      <label>Observações Gerais</label>
+      <textarea name="observacoes" rows="4">{{ familia.observacoes if familia else '' }}</textarea>
+    </div>
+  </fieldset>
+
+  <div class="actions">
+    <button type="submit" class="btn">Salvar</button>
+    {% if familia %}
+      <a href="{{ url_for('familia_detalhe', familia_id=familia.id) }}" class="btn btn-outline">Cancelar</a>
+    {% else %}
+      <a href="{{ url_for('familias_list') }}" class="btn btn-outline">Cancelar</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "relatorios/_base_rel.html" %}
+{% block titulo_rel %}Vulnerabilidades e Riscos Sociais{% endblock %}
+{% block corpo %}
+<table>
+  <thead><tr><th>Situação</th><th>Pessoas identificadas</th></tr></thead>
+  <tbody>
+    {% for label, qtd in dados %}
+      <tr><td>{{ label }}</td><td>{{ qtd }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{% if atendimento %}Editar Atendimento{% else %}Novo Atendimento{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if atendimento %}Editar atendimento{% else %}Novo atendimento{% endif %}</h1>
+<p style="color:var(--cinza-esc)">Família: <a href="{{ url_for('familia_detalhe', familia_id=familia.id) }}">{{ familia.prontuario_familiar }}</a></p>
+
+<form method="post">
+  <fieldset class="fieldset">
+    <legend>Dados do Atendimento</legend>
+    <div class="grid grid-3">
+      <div class="field"><label>Data *</label><input type="date" name="data_atendimento" required value="{{ (atendimento.data_atendimento if atendimento else '')|string }}"></div>
+      <div class="field"><label>Hora</label><input type="time" name="hora_atendimento" value="{{ atendimento.hora_atendimento.strftime('%H:%M') if atendimento and atendimento.hora_atendimento else '' }}"></div>
+      <div class="field">
+        <label>Membro atendido (opcional)</label>
+        <select name="membro_id">
+          <option value="">Família (todos)</option>
+          {% for m in familia.membros %}
+          <option value="{{ m.id }}" {% if atendimento and atendimento.membro_id == m.id %}selected{% endif %}>{{ m.nome_completo }} ({{ m.parentesco or '—' }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Tipo de Atendimento</label>
+        <select name="tipo_atendimento">
+          {% for t in ['','Acolhida','Escuta','Atendimento particularizado','Visita domiciliar','Atendimento coletivo','Grupo/Oficina','Reunião familiar','Estudo social','Orientação','Benefício eventual','Cadastro/Recadastro Único','Solicitação de documentos','Outros'] %}
+          <option value="{{ t }}" {% if atendimento and atendimento.tipo_atendimento == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Modalidade</label>
+        <select name="modalidade">
+          {% for t in ['','Presencial','Remoto','Telefônico','Domiciliar','Institucional'] %}
+          <option value="{{ t }}" {% if atendimento and atendimento.modalidade == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Situação</label>
+        <select name="situacao">
+          {% for t in ['Concluído','Em andamento','Aguardando retorno','Cancelado'] %}
+          <option value="{{ t }}" {% if atendimento and atendimento.situacao == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Unidade</label><input type="text" name="unidade" value="{{ atendimento.unidade if atendimento else '' }}"></div>
+      <div class="field" style="grid-column:span 2"><label>Técnico Responsável</label><input type="text" name="tecnico_responsavel" value="{{ atendimento.tecnico_responsavel if atendimento else '' }}"></div>
+    </div>
+    <div class="field"><label>Demanda apresentada</label><textarea name="demanda_apresentada" rows="3">{{ atendimento.demanda_apresentada if atendimento else '' }}</textarea></div>
+    <div class="field"><label>Parecer técnico</label><textarea name="parecer_tecnico" rows="3">{{ atendimento.parecer_tecnico if atendimento else '' }}</textarea></div>
+    <div class="field"><label>Procedimentos realizados</label><textarea name="procedimentos" rows="3">{{ atendimento.procedimentos if atendimento else '' }}</textarea></div>
+  </fieldset>
+
+  <div class="actions">
+    <button type="submit" class="btn">Salvar</button>
+    <a href="{{ url_for('familia_detalhe', familia_id=familia.id) }}#atendimentos" class="btn btn-outline">Cancelar</a>
+    {% if atendimento %}
+    <form method="post" action="{{ url_for('atendimento_excluir', atendimento_id=atendimento.id) }}" onsubmit="return confirm('Excluir?');" style="display:inline">
+      <button type="submit" class="btn btn-danger">Excluir</button>
+    </form>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

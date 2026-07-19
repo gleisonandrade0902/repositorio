@@ -1,0 +1,45 @@
+{% extends "relatorios/_base_rel.html" %}
+{% block titulo_rel %}Relatório de Famílias Cadastradas{% endblock %}
+{% block corpo %}
+<div class="grid grid-4">
+  <div class="stat"><div class="num">{{ total_familias }}</div><div class="label">Famílias</div></div>
+  <div class="stat verde"><div class="num">{{ total_pessoas }}</div><div class="label">Pessoas</div></div>
+  <div class="stat amarelo"><div class="num">{{ pobreza }}</div><div class="label">Famílias em pobreza</div></div>
+  <div class="stat vermelho"><div class="num">{{ extrema_pobreza }}</div><div class="label">Em extrema pobreza</div></div>
+</div>
+
+<div class="grid grid-4" style="margin-top:1rem">
+  <div class="stat verde"><div class="num">{{ bolsa_familia }}</div><div class="label">Bolsa Família</div></div>
+  <div class="stat verde"><div class="num">{{ bpc }}</div><div class="label">BPC</div></div>
+  <div class="stat amarelo"><div class="num">{{ paif }}</div><div class="label">PAIF</div></div>
+  <div class="stat vermelho"><div class="num">{{ paefi }}</div><div class="label">PAEFI</div></div>
+</div>
+
+<div class="table-wrap" style="margin-top:1.5rem">
+<table>
+  <thead><tr>
+    <th>Prontuário</th><th>Responsável</th><th>Membros</th><th>Bairro/Cidade</th>
+    <th>Renda Fam.</th><th>Per capita</th><th>Programas</th><th>Vulnerab.</th>
+  </tr></thead>
+  <tbody>
+    {% for f in familias %}
+    <tr>
+      <td>{{ f.prontuario_familiar }}</td>
+      <td>{{ f.responsavel.nome_completo if f.responsavel else '—' }}</td>
+      <td>{{ f.total_membros }}</td>
+      <td>{{ f.bairro or '—' }} / {{ f.cidade or '' }}</td>
+      <td>{{ f.renda_familiar_total|moeda }}</td>
+      <td>{{ f.renda_per_capita|moeda }}</td>
+      <td>
+        {% if f.prog_bolsa_familia %}PBF {% endif %}
+        {% if f.prog_bpc %}BPC {% endif %}
+        {% if f.em_paif %}PAIF {% endif %}
+        {% if f.em_paefi %}PAEFI {% endif %}
+      </td>
+      <td>{{ (f.vulnerabilidades or '')[:60] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

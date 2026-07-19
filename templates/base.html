@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}GeSUAS Local{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="{{ url_for('index') }}">
+        <strong>GeSUAS Local</strong>
+        <span>Sistema de Gestão da Assistência Social</span>
+      </a>
+    </div>
+    <nav class="mainnav">
+      <a href="{{ url_for('index') }}">Início</a>
+      <a href="{{ url_for('familias_list') }}">Famílias</a>
+      <a href="{{ url_for('atendimentos_list') }}">Atendimentos</a>
+      <a href="{{ url_for('relatorios_index') }}">Relatórios</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <small>GeSUAS Local &middot; Sistema local para gestão da Política Nacional de Assistência Social (PNAS/SUAS) &middot; Uso interno</small>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

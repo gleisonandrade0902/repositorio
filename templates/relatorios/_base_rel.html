@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="print-header">
+  <h1>{% block titulo_rel %}Relatório{% endblock %}</h1>
+  <small>Emitido em {{ agora|data_br }} — GeSUAS Local</small>
+</div>
+<div class="actions no-print">
+  <button onclick="window.print()" class="btn">Imprimir / Salvar PDF</button>
+  <a href="{{ url_for('relatorios_index') }}" class="btn btn-outline">Voltar</a>
+</div>
+{% block corpo %}{% endblock %}
+{% endblock %}

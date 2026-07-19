@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Painel - GeSUAS Local{% endblock %}
+{% block content %}
+<h1>Painel</h1>
+
+<div class="grid grid-4">
+  <div class="stat">
+    <div class="num">{{ stats.familias }}</div>
+    <div class="label">Famílias cadastradas</div>
+  </div>
+  <div class="stat verde">
+    <div class="num">{{ stats.membros }}</div>
+    <div class="label">Pessoas acompanhadas</div>
+  </div>
+  <div class="stat amarelo">
+    <div class="num">{{ stats.atendimentos_mes }}</div>
+    <div class="label">Atendimentos no mês</div>
+  </div>
+  <div class="stat vermelho">
+    <div class="num">{{ stats.encaminhamentos_abertos }}</div>
+    <div class="label">Encaminhamentos abertos</div>
+  </div>
+</div>
+
+<div class="actions" style="margin-top:1.25rem">
+  <a href="{{ url_for('familia_nova') }}" class="btn">+ Nova família</a>
+  <a href="{{ url_for('familias_list') }}" class="btn btn-outline">Buscar famílias</a>
+  <a href="{{ url_for('relatorios_index') }}" class="btn btn-outline">Relatórios</a>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Últimas famílias cadastradas</h2>
+    {% if ultimas_familias %}
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Prontuário</th><th>Responsável</th><th>Bairro</th><th>Cadastro</th></tr></thead>
+        <tbody>
+        {% for f in ultimas_familias %}
+          <tr>
+            <td><a href="{{ url_for('familia_detalhe', familia_id=f.id) }}">{{ f.prontuario_familiar }}</a></td>
+            <td>{{ f.responsavel.nome_completo if f.responsavel else '—' }}</td>
+            <td>{{ f.bairro or '—' }}</td>
+            <td>{{ f.data_cadastro|data_br }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% else %}
+      <p>Nenhuma família cadastrada. <a href="{{ url_for('familia_nova') }}">Cadastrar a primeira</a>.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Últimas evoluções nos prontuários</h2>
+    {% if ultimas_evolucoes %}
+      <ul class="timeline">
+      {% for ev in ultimas_evolucoes %}
+        <li>
+          <div>
+            <span class="data">{{ ev.data_evolucao|data_br }}</span>
+            {% if ev.tipo_evolucao %}<span class="tipo">{{ ev.tipo_evolucao }}</span>{% endif %}
+          </div>
+          <div><a href="{{ url_for('membro_detalhe', membro_id=ev.membro_id) }}">{{ ev.membro.nome_completo }}</a></div>
+          <div style="color:var(--cinza-esc);font-size:.85rem">{{ (ev.descricao or '')[:120] }}{% if (ev.descricao or '')|length > 120 %}...{% endif %}</div>
+        </li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhuma evolução registrada ainda.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

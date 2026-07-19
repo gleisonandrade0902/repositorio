@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{% if evolucao %}Editar Evolução{% else %}Nova Evolução{% endif %} - {{ membro.nome_completo }}{% endblock %}
+{% block content %}
+<h1>{% if evolucao %}Editar evolução{% else %}Nova evolução no prontuário{% endif %}</h1>
+<p style="color:var(--cinza-esc)">Membro: <a href="{{ url_for('membro_detalhe', membro_id=membro.id) }}">{{ membro.nome_completo }}</a> — Prontuário {{ membro.prontuario_individual }}</p>
+
+<form method="post">
+  <fieldset class="fieldset">
+    <legend>Registro de Evolução</legend>
+    <div class="grid grid-3">
+      <div class="field"><label>Data *</label><input type="date" name="data_evolucao" required value="{{ (evolucao.data_evolucao if evolucao else '')|string }}"></div>
+      <div class="field"><label>Hora</label><input type="time" name="hora_evolucao" value="{{ evolucao.hora_evolucao.strftime('%H:%M') if evolucao and evolucao.hora_evolucao else '' }}"></div>
+      <div class="field">
+        <label>Tipo de evolução</label>
+        <select name="tipo_evolucao">
+          {% for t in ['','Escuta qualificada','Visita domiciliar','Atendimento particularizado','Atendimento coletivo','Grupo/Oficina','Acompanhamento PAIF','Acompanhamento PAEFI','Estudo social','Parecer técnico','Articulação intersetorial','Contato telefônico','Outros'] %}
+          <option value="{{ t }}" {% if evolucao and evolucao.tipo_evolucao == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Técnico Responsável</label><input type="text" name="tecnico_responsavel" value="{{ evolucao.tecnico_responsavel if evolucao else '' }}"></div>
+      <div class="field" style="grid-column:span 2"><label>Local</label><input type="text" name="local" value="{{ evolucao.local if evolucao else '' }}" placeholder="Ex: CRAS Central, Domicílio, Escola Y..."></div>
+    </div>
+    <div class="field">
+      <label>Descrição / Registro *</label>
+      <textarea name="descricao" required rows="6" placeholder="Descreva o que foi observado, escutado, conversado, ações realizadas...">{{ evolucao.descricao if evolucao else '' }}</textarea>
+    </div>
+    <div class="field">
+      <label>Conduta / Intervenção</label>
+      <textarea name="conduta" rows="3">{{ evolucao.conduta if evolucao else '' }}</textarea>
+    </div>
+    <div class="field">
+      <label>Encaminhamentos realizados</label>
+      <textarea name="encaminhamentos" rows="3">{{ evolucao.encaminhamentos if evolucao else '' }}</textarea>
+    </div>
+    <div class="field">
+      <label>Próximos passos</label>
+      <textarea name="proximos_passos" rows="3">{{ evolucao.proximos_passos if evolucao else '' }}</textarea>
+    </div>
+  </fieldset>
+  <div class="actions">
+    <button type="submit" class="btn">Salvar evolução</button>
+    <a href="{{ url_for('membro_detalhe', membro_id=membro.id) }}#prontuario" class="btn btn-outline">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

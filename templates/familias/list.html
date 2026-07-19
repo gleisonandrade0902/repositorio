@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Famílias - GeSUAS Local{% endblock %}
+{% block content %}
+<h1>Famílias</h1>
+
+<div class="actions">
+  <a href="{{ url_for('familia_nova') }}" class="btn">+ Nova família</a>
+</div>
+
+<form method="get" class="search-box">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar por prontuário, NIS, CAD, bairro, nome ou CPF do membro...">
+  <button type="submit" class="btn">Buscar</button>
+  {% if q %}<a href="{{ url_for('familias_list') }}" class="btn btn-outline">Limpar</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Prontuário</th>
+      <th>Responsável Familiar</th>
+      <th>Membros</th>
+      <th>Bairro/Cidade</th>
+      <th>Renda per capita</th>
+      <th>Programas</th>
+      <th>Cadastro</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for f in familias %}
+    <tr>
+      <td><strong>{{ f.prontuario_familiar }}</strong></td>
+      <td>
+        {% if f.responsavel %}
+          {{ f.responsavel.nome_completo }}
+          {% if f.responsavel.cpf %}<br><small>{{ f.responsavel.cpf }}</small>{% endif %}
+        {% else %}<em>Sem responsável</em>{% endif %}
+      </td>
+      <td>{{ f.total_membros }}</td>
+      <td>{{ f.bairro or '—' }}<br><small>{{ f.cidade or '' }}/{{ f.uf or '' }}</small></td>
+      <td>{{ f.renda_per_capita|moeda }}</td>
+      <td>
+        {% if f.prog_bolsa_familia %}<span class="badge badge-verde">PBF</span>{% endif %}
+        {% if f.prog_bpc %}<span class="badge badge-azul">BPC</span>{% endif %}
+        {% if f.em_paif %}<span class="badge badge-amarelo">PAIF</span>{% endif %}
+        {% if f.em_paefi %}<span class="badge badge-vermelho">PAEFI</span>{% endif %}
+      </td>
+      <td>{{ f.data_cadastro|data_br }}</td>
+      <td><a href="{{ url_for('familia_detalhe', familia_id=f.id) }}" class="btn btn-sm btn-outline">Abrir</a></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8" style="text-align:center;color:var(--cinza-esc)">Nenhuma família encontrada.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

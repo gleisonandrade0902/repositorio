@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+.env
+*.db
+*.sqlite
+*.sqlite3
+gesuas_local.db
+.DS_Store
+.idea/
+.vscode/
+*.egg-info/
+instance/

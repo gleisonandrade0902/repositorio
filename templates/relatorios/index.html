@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block content %}
+<h1>Relatórios</h1>
+<p>Todos os relatórios são renderizados em HTML e podem ser impressos ou salvos em PDF diretamente pelo navegador (Ctrl+P).</p>
+<div class="grid grid-3">
+  <a class="card" href="{{ url_for('relatorio_familias') }}" style="text-decoration:none;color:inherit">
+    <h3>Famílias cadastradas</h3>
+    <p>Lista consolidada com composição, renda per capita, benefícios e indicadores de pobreza.</p>
+  </a>
+  <a class="card" href="{{ url_for('relatorio_populacional') }}" style="text-decoration:none;color:inherit">
+    <h3>Perfil populacional</h3>
+    <p>Distribuição por faixa etária, sexo, raça/cor e deficiência.</p>
+  </a>
+  <a class="card" href="{{ url_for('relatorio_vulnerabilidades') }}" style="text-decoration:none;color:inherit">
+    <h3>Vulnerabilidades e riscos</h3>
+    <p>Contagem por tipo de vulnerabilidade identificada nos membros.</p>
+  </a>
+  <a class="card" href="{{ url_for('relatorio_atendimentos') }}" style="text-decoration:none;color:inherit">
+    <h3>Atendimentos</h3>
+    <p>Relatório de atendimentos por período, tipo e técnico responsável.</p>
+  </a>
+  <a class="card" href="{{ url_for('familias_list') }}" style="text-decoration:none;color:inherit">
+    <h3>Ficha da Família</h3>
+    <p>Abra qualquer família e clique em "Relatório família" para imprimir a ficha completa.</p>
+  </a>
+  <a class="card" href="{{ url_for('familias_list') }}" style="text-decoration:none;color:inherit">
+    <h3>Prontuário Individual</h3>
+    <p>No prontuário de qualquer membro clique em "Imprimir prontuário".</p>
+  </a>
+</div>
+{% endblock %}

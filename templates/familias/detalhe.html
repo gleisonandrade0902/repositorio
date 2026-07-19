@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Família {{ familia.prontuario_familiar }} - GeSUAS Local{% endblock %}
+{% block content %}
+<h1>Família {{ familia.prontuario_familiar }}
+  {% if not familia.ativo %}<span class="badge badge-vermelho">Inativa</span>{% endif %}
+</h1>
+
+<div class="actions">
+  <a href="{{ url_for('familia_editar', familia_id=familia.id) }}" class="btn">Editar dados</a>
+  <a href="{{ url_for('membro_novo', familia_id=familia.id) }}" class="btn btn-verde">+ Adicionar membro</a>
+  <a href="{{ url_for('atendimento_novo', familia_id=familia.id) }}" class="btn btn-outline">+ Atendimento</a>
+  <a href="{{ url_for('encaminhamento_novo', familia_id=familia.id) }}" class="btn btn-outline">+ Encaminhamento</a>
+  <a href="{{ url_for('relatorio_familia_individual', familia_id=familia.id) }}" class="btn btn-outline" target="_blank">Relatório família</a>
+  <form method="post" action="{{ url_for('familia_excluir', familia_id=familia.id) }}" onsubmit="return confirm('Excluir esta família e todos os seus dados?');" style="display:inline">
+    <button type="submit" class="btn btn-danger">Excluir</button>
+  </form>
+</div>
+
+<div class="tabs">
+  <a href="#dados" class="active" onclick="switchTab(event,'dados')">Dados da Família</a>
+  <a href="#membros" onclick="switchTab(event,'membros')">Membros ({{ familia.total_membros }})</a>
+  <a href="#atendimentos" onclick="switchTab(event,'atendimentos')">Atendimentos</a>
+  <a href="#encaminhamentos" onclick="switchTab(event,'encaminhamentos')">Encaminhamentos</a>
+</div>
+
+<div id="tab-dados" class="tab-panel">
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Identificação</h3>
+      <dl class="info-list">
+        <dt>Prontuário</dt><dd>{{ familia.prontuario_familiar }}</dd>
+        <dt>Data de cadastro</dt><dd>{{ familia.data_cadastro|data_br }}</dd>
+        <dt>Unidade de Referência</dt><dd>{{ familia.unidade_referencia or '—' }}</dd>
+        <dt>Técnico</dt><dd>{{ familia.tecnico_referencia or '—' }}</dd>
+        <dt>CAD Único</dt><dd>{{ familia.cad_unico or '—' }}</dd>
+        <dt>NIS Responsável</dt><dd>{{ familia.nis_responsavel or '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Endereço</h3>
+      <dl class="info-list">
+        <dt>Logradouro</dt><dd>{{ familia.logradouro or '—' }}, {{ familia.numero or 's/n' }}</dd>
+        <dt>Complemento</dt><dd>{{ familia.complemento or '—' }}</dd>
+        <dt>Bairro</dt><dd>{{ familia.bairro or '—' }}</dd>
+        <dt>Cidade/UF</dt><dd>{{ familia.cidade or '—' }} / {{ familia.uf or '' }}</dd>
+        <dt>CEP</dt><dd>{{ familia.cep or '—' }}</dd>
+        <dt>Zona</dt><dd>{{ familia.zona or '—' }}</dd>
+        <dt>Ponto de Referência</dt><dd>{{ familia.ponto_referencia or '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Moradia</h3>
+      <dl class="info-list">
+        <dt>Tipo</dt><dd>{{ familia.tipo_moradia or '—' }}</dd>
+        <dt>Situação</dt><dd>{{ familia.situacao_moradia or '—' }}</dd>
+        <dt>Material</dt><dd>{{ familia.material_construcao or '—' }}</dd>
+        <dt>Cômodos</dt><dd>{{ familia.numero_comodos or '—' }}</dd>
+        <dt>Dormitórios</dt><dd>{{ familia.numero_dormitorios or '—' }}</dd>
+        <dt>Água</dt><dd>{{ familia.tem_agua_encanada|sim_nao }}</dd>
+        <dt>Esgoto</dt><dd>{{ familia.tem_esgoto|sim_nao }}</dd>
+        <dt>Energia</dt><dd>{{ familia.tem_energia_eletrica|sim_nao }}</dd>
+        <dt>Coleta de lixo</dt><dd>{{ familia.tem_coleta_lixo|sim_nao }}</dd>
+        <dt>Banheiro</dt><dd>{{ familia.tem_banheiro|sim_nao }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Renda e Benefícios</h3>
+      <dl class="info-list">
+        <dt>Renda familiar total</dt><dd>{{ familia.renda_familiar_total|moeda }}</dd>
+        <dt>Renda per capita</dt><dd>{{ familia.renda_per_capita|moeda }}</dd>
+        <dt>Bolsa Família</dt><dd>{{ familia.prog_bolsa_familia|sim_nao }} {% if familia.valor_bolsa_familia %}({{ familia.valor_bolsa_familia|moeda }}){% endif %}</dd>
+        <dt>BPC</dt><dd>{{ familia.prog_bpc|sim_nao }}</dd>
+        <dt>Benefícios eventuais</dt><dd>{{ familia.prog_beneficios_eventuais|sim_nao }}</dd>
+        <dt>Outros programas</dt><dd>{{ familia.outros_programas or '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card" style="grid-column:span 2">
+      <h3>Acompanhamento SUAS</h3>
+      <p>
+        {% if familia.em_paif %}<span class="badge badge-amarelo">PAIF</span>{% endif %}
+        {% if familia.em_paefi %}<span class="badge badge-vermelho">PAEFI</span>{% endif %}
+        {% if familia.medida_socioeducativa %}<span class="badge badge-azul">Medida Socioeducativa</span>{% endif %}
+        {% if familia.servico_convivencia %}<span class="badge badge-verde">SCFV</span>{% endif %}
+        {% if not (familia.em_paif or familia.em_paefi or familia.medida_socioeducativa or familia.servico_convivencia) %}<em>Nenhum serviço marcado</em>{% endif %}
+      </p>
+      <p><strong>Vulnerabilidades:</strong><br>{{ familia.vulnerabilidades or '—' }}</p>
+      <p><strong>Observações:</strong><br>{{ familia.observacoes or '—' }}</p>
+    </div>
+  </div>
+</div>
+
+<div id="tab-membros" class="tab-panel" style="display:none">
+  <div class="card">
+    <h3>Composição Familiar ({{ familia.total_membros }} pessoas)</h3>
+    <div class="actions">
+      <a href="{{ url_for('membro_novo', familia_id=familia.id) }}" class="btn btn-verde">+ Adicionar membro</a>
+    </div>
+    {% if familia.membros.count() > 0 %}
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prontuário</th>
+            <th>Nome</th>
+            <th>Parentesco</th>
+            <th>Idade</th>
+            <th>CPF/NIS</th>
+            <th>Escolaridade</th>
+            <th>Renda</th>
+            <th>Sinais</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for m in familia.membros %}
+          <tr>
+            <td>{{ m.prontuario_individual }}</td>
+            <td>
+              <a href="{{ url_for('membro_detalhe', membro_id=m.id) }}"><strong>{{ m.nome_completo }}</strong></a>
+              {% if m.nome_social %}<br><small>Nome social: {{ m.nome_social }}</small>{% endif %}
+            </td>
+            <td>{{ m.parentesco or '—' }}</td>
+            <td>{{ m.idade if m.idade is not none else '—' }}</td>
+            <td>{{ m.cpf or '—' }}{% if m.nis %}<br><small>NIS: {{ m.nis }}</small>{% endif %}</td>
+            <td>{{ m.escolaridade or '—' }}</td>
+            <td>{{ m.renda_individual|moeda }}</td>
+            <td>
+              {% if m.gestante %}<span class="badge badge-amarelo">Gestante</span>{% endif %}
+              {% if m.tem_deficiencia %}<span class="badge badge-azul">PcD</span>{% endif %}
+              {% if m.trabalho_infantil %}<span class="badge badge-vermelho">Trab. Inf.</span>{% endif %}
+              {% if m.violencia_domestica %}<span class="badge badge-vermelho">Viol. Dom.</span>{% endif %}
+              {% if m.situacao_rua %}<span class="badge badge-vermelho">Sit. Rua</span>{% endif %}
+            </td>
+            <td><a href="{{ url_for('membro_detalhe', membro_id=m.id) }}" class="btn btn-sm btn-outline">Prontuário</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% else %}
+      <p>Nenhum membro cadastrado. <a href="{{ url_for('membro_novo', familia_id=familia.id) }}">Adicionar o primeiro</a>.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="tab-atendimentos" class="tab-panel" style="display:none">
+  <div class="card">
+    <h3>Atendimentos da Família</h3>
+    <div class="actions">
+      <a href="{{ url_for('atendimento_novo', familia_id=familia.id) }}" class="btn">+ Novo atendimento</a>
+    </div>
+    {% set atends = familia.atendimentos.all() %}
+    {% if atends %}
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Membro</th><th>Técnico</th><th>Demanda</th><th>Situação</th><th></th></tr></thead>
+        <tbody>
+        {% for a in atends %}
+          <tr>
+            <td>{{ a.data_atendimento|data_br }}{% if a.hora_atendimento %} {{ a.hora_atendimento.strftime('%H:%M') }}{% endif %}</td>
+            <td>{{ a.tipo_atendimento or '—' }}</td>
+            <td>{{ a.membro.nome_completo if a.membro else 'Família (todos)' }}</td>
+            <td>{{ a.tecnico_responsavel or '—' }}</td>
+            <td>{{ (a.demanda_apresentada or '')[:80] }}{% if (a.demanda_apresentada or '')|length > 80 %}...{% endif %}</td>
+            <td><span class="badge">{{ a.situacao }}</span></td>
+            <td>
+              <a href="{{ url_for('atendimento_editar', atendimento_id=a.id) }}" class="btn btn-sm btn-outline">Editar</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% else %}
+      <p>Sem atendimentos registrados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="tab-encaminhamentos" class="tab-panel" style="display:none">
+  <div class="card">
+    <h3>Encaminhamentos</h3>
+    <div class="actions">
+      <a href="{{ url_for('encaminhamento_novo', familia_id=familia.id) }}" class="btn">+ Novo encaminhamento</a>
+    </div>
+    {% set encs = familia.encaminhamentos.all() %}
+    {% if encs %}
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Órgão/Destino</th><th>Setor</th><th>Motivo</th><th>Status</th><th>Contra-referência</th><th></th></tr></thead>
+        <tbody>
+        {% for e in encs %}
+          <tr>
+            <td>{{ e.data_encaminhamento|data_br }}</td>
+            <td>{{ e.orgao_destino }}</td>
+            <td>{{ e.setor or '—' }}</td>
+            <td>{{ (e.motivo or '')[:100] }}</td>
+            <td><span class="badge">{{ e.status }}</span></td>
+            <td>{{ e.contra_referencia|sim_nao }}{% if e.data_contra_referencia %} ({{ e.data_contra_referencia|data_br }}){% endif %}</td>
+            <td><a href="{{ url_for('encaminhamento_editar', enc_id=e.id) }}" class="btn btn-sm btn-outline">Editar</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% else %}
+      <p>Sem encaminhamentos.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function switchTab(ev, name){
+  ev.preventDefault();
+  document.querySelectorAll('.tabs a').forEach(a => a.classList.remove('active'));
+  ev.target.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  history.replaceState(null, '', '#'+name);
+}
+(function(){
+  const hash = window.location.hash.substring(1);
+  if(hash){
+    const tab = document.querySelector('.tabs a[href="#'+hash+'"]');
+    if(tab) tab.click();
+  }
+})();
+</script>
+{% endblock %}

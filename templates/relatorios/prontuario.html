@@ -1,0 +1,54 @@
+{% extends "relatorios/_base_rel.html" %}
+{% block titulo_rel %}Prontuário Individual — {{ membro.nome_completo }}{% endblock %}
+{% block corpo %}
+<div class="card">
+  <h3>Identificação</h3>
+  <dl class="info-list">
+    <dt>Nome</dt><dd>{{ membro.nome_completo }}</dd>
+    <dt>Nome social</dt><dd>{{ membro.nome_social or '—' }}</dd>
+    <dt>Prontuário</dt><dd>{{ membro.prontuario_individual }}</dd>
+    <dt>Família</dt><dd>{{ membro.familia.prontuario_familiar }}</dd>
+    <dt>Parentesco</dt><dd>{{ membro.parentesco or '—' }}</dd>
+    <dt>Data Nasc.</dt><dd>{{ membro.data_nascimento|data_br }} {% if membro.idade is not none %}({{ membro.idade }} anos){% endif %}</dd>
+    <dt>Sexo</dt><dd>{{ membro.sexo or '—' }}</dd>
+    <dt>Raça/Cor</dt><dd>{{ membro.raca_cor or '—' }}</dd>
+    <dt>CPF</dt><dd>{{ membro.cpf or '—' }}</dd>
+    <dt>RG</dt><dd>{{ membro.rg or '—' }}</dd>
+    <dt>NIS</dt><dd>{{ membro.nis or '—' }}</dd>
+    <dt>Escolaridade</dt><dd>{{ membro.escolaridade or '—' }}</dd>
+    <dt>Ocupação</dt><dd>{{ membro.ocupacao or '—' }}</dd>
+    <dt>Renda</dt><dd>{{ membro.renda_individual|moeda }}</dd>
+    <dt>Telefone</dt><dd>{{ membro.telefone or '—' }}</dd>
+    <dt>E-mail</dt><dd>{{ membro.email or '—' }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Saúde e Situação social</h3>
+  <p><strong>Deficiência:</strong> {{ membro.tem_deficiencia|sim_nao }} — {{ membro.tipo_deficiencia or '' }} {{ membro.cid or '' }}</p>
+  <p><strong>Medicações:</strong> {{ membro.medicacoes or '—' }}</p>
+  <p><strong>Problemas de saúde:</strong> {{ membro.problemas_saude or '—' }}</p>
+  <p><strong>Gestante:</strong> {{ membro.gestante|sim_nao }} · <strong>Lactante:</strong> {{ membro.lactante|sim_nao }}</p>
+  <p><strong>Situação de rua:</strong> {{ membro.situacao_rua|sim_nao }} · <strong>Trab. infantil:</strong> {{ membro.trabalho_infantil|sim_nao }} · <strong>Violência doméstica:</strong> {{ membro.violencia_domestica|sim_nao }} · <strong>Uso de substâncias:</strong> {{ membro.uso_substancias|sim_nao }}</p>
+  <p><strong>Observações:</strong> {{ membro.observacoes or '—' }}</p>
+</div>
+
+<h2>Histórico do Prontuário — Evolução ({{ evolucoes|length }} registros)</h2>
+{% if evolucoes %}
+{% for ev in evolucoes %}
+<div class="card">
+  <p style="margin-top:0"><strong>{{ ev.data_evolucao|data_br }}{% if ev.hora_evolucao %} {{ ev.hora_evolucao.strftime('%H:%M') }}{% endif %}</strong>
+     {% if ev.tipo_evolucao %} · <span class="badge badge-azul">{{ ev.tipo_evolucao }}</span>{% endif %}
+     {% if ev.tecnico_responsavel %} · Técnico: {{ ev.tecnico_responsavel }}{% endif %}
+     {% if ev.local %} · Local: {{ ev.local }}{% endif %}
+  </p>
+  <p><strong>Descrição:</strong><br>{{ ev.descricao }}</p>
+  {% if ev.conduta %}<p><strong>Conduta:</strong> {{ ev.conduta }}</p>{% endif %}
+  {% if ev.encaminhamentos %}<p><strong>Encaminhamentos:</strong> {{ ev.encaminhamentos }}</p>{% endif %}
+  {% if ev.proximos_passos %}<p><strong>Próximos passos:</strong> {{ ev.proximos_passos }}</p>{% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p>Sem registros de evolução.</p>
+{% endif %}
+{% endblock %}

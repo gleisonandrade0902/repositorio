@@ -1,0 +1,56 @@
+{% extends "relatorios/_base_rel.html" %}
+{% block titulo_rel %}Relatório de Atendimentos{% endblock %}
+{% block corpo %}
+<form method="get" class="no-print" style="margin-bottom:1rem">
+  <div class="grid grid-3" style="align-items:end">
+    <div class="field"><label>De</label><input type="date" name="inicio" value="{{ inicio|string if inicio else '' }}"></div>
+    <div class="field"><label>Até</label><input type="date" name="fim" value="{{ fim|string if fim else '' }}"></div>
+    <div class="field"><button type="submit" class="btn">Filtrar</button></div>
+  </div>
+</form>
+
+<p>Total de atendimentos no período: <strong>{{ atendimentos|length }}</strong>
+{% if inicio or fim %}({{ inicio|data_br if inicio else '...' }} até {{ fim|data_br if fim else '...' }}){% endif %}</p>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Por tipo</h3>
+    <table>
+      <tbody>
+      {% for k, v in por_tipo.items() %}
+        <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Por técnico</h3>
+    <table>
+      <tbody>
+      {% for k, v in por_tecnico.items() %}
+        <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<h2>Detalhamento</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Data</th><th>Família</th><th>Membro</th><th>Tipo</th><th>Técnico</th><th>Situação</th></tr></thead>
+  <tbody>
+  {% for a in atendimentos %}
+    <tr>
+      <td>{{ a.data_atendimento|data_br }}</td>
+      <td>{{ a.familia.prontuario_familiar }}</td>
+      <td>{{ a.membro.nome_completo if a.membro else '—' }}</td>
+      <td>{{ a.tipo_atendimento or '—' }}</td>
+      <td>{{ a.tecnico_responsavel or '—' }}</td>
+      <td>{{ a.situacao }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

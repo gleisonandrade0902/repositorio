@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{% if encaminhamento %}Editar Encaminhamento{% else %}Novo Encaminhamento{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if encaminhamento %}Editar encaminhamento{% else %}Novo encaminhamento{% endif %}</h1>
+<p style="color:var(--cinza-esc)">Família: <a href="{{ url_for('familia_detalhe', familia_id=familia.id) }}">{{ familia.prontuario_familiar }}</a></p>
+
+<form method="post">
+  <fieldset class="fieldset">
+    <legend>Encaminhamento</legend>
+    <div class="grid grid-3">
+      <div class="field"><label>Data *</label><input type="date" name="data_encaminhamento" required value="{{ (encaminhamento.data_encaminhamento if encaminhamento else '')|string }}"></div>
+      <div class="field">
+        <label>Membro (opcional)</label>
+        <select name="membro_id">
+          <option value="">Família (todos)</option>
+          {% for m in familia.membros %}
+          <option value="{{ m.id }}" {% if encaminhamento and encaminhamento.membro_id == m.id %}selected{% endif %}>{{ m.nome_completo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select name="status">
+          {% for s in ['Pendente','Em andamento','Atendido','Recusado','Cancelado'] %}
+          <option value="{{ s }}" {% if encaminhamento and encaminhamento.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" style="grid-column:span 2"><label>Órgão/Serviço de Destino *</label><input type="text" name="orgao_destino" required value="{{ encaminhamento.orgao_destino if encaminhamento else '' }}" placeholder="Ex: UBS Central, CAPS AD, Conselho Tutelar, INSS..."></div>
+      <div class="field"><label>Setor / Serviço</label><input type="text" name="setor" value="{{ encaminhamento.setor if encaminhamento else '' }}"></div>
+      <div class="field" style="grid-column:span 2"><label>Profissional de Referência</label><input type="text" name="profissional_referencia" value="{{ encaminhamento.profissional_referencia if encaminhamento else '' }}"></div>
+      <div class="field-check" style="align-self:end;padding-bottom:.6rem"><input type="checkbox" name="contra_referencia" id="cref" {% if encaminhamento and encaminhamento.contra_referencia %}checked{% endif %}><label for="cref">Recebeu contra-referência?</label></div>
+      <div class="field"><label>Data contra-referência</label><input type="date" name="data_contra_referencia" value="{{ (encaminhamento.data_contra_referencia if encaminhamento else '')|string }}"></div>
+    </div>
+    <div class="field"><label>Motivo do encaminhamento</label><textarea name="motivo" rows="3">{{ encaminhamento.motivo if encaminhamento else '' }}</textarea></div>
+    <div class="field"><label>Resultado / Contra-referência</label><textarea name="resultado" rows="3">{{ encaminhamento.resultado if encaminhamento else '' }}</textarea></div>
+  </fieldset>
+
+  <div class="actions">
+    <button type="submit" class="btn">Salvar</button>
+    <a href="{{ url_for('familia_detalhe', familia_id=familia.id) }}#encaminhamentos" class="btn btn-outline">Cancelar</a>
+    {% if encaminhamento %}
+    <form method="post" action="{{ url_for('encaminhamento_excluir', enc_id=encaminhamento.id) }}" onsubmit="return confirm('Excluir?');" style="display:inline">
+      <button type="submit" class="btn btn-danger">Excluir</button>
+    </form>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

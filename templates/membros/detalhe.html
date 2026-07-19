@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Prontuário - {{ membro.nome_completo }}{% endblock %}
+{% block content %}
+<h1>{{ membro.nome_completo }}
+  {% if membro.nome_social %}<small style="font-weight:normal">(nome social: {{ membro.nome_social }})</small>{% endif %}
+  {% if not membro.ativo %}<span class="badge badge-vermelho">Inativo</span>{% endif %}
+</h1>
+
+<p style="color:var(--cinza-esc);margin-top:-.5rem">
+  Prontuário: <strong>{{ membro.prontuario_individual }}</strong> ·
+  Família: <a href="{{ url_for('familia_detalhe', familia_id=membro.familia_id) }}">{{ membro.familia.prontuario_familiar }}</a>
+  {% if membro.familia.responsavel and membro.familia.responsavel.id != membro.id %}
+    (Responsável: {{ membro.familia.responsavel.nome_completo }})
+  {% endif %}
+</p>
+
+<div class="actions">
+  <a href="{{ url_for('membro_editar', membro_id=membro.id) }}" class="btn">Editar dados</a>
+  <a href="{{ url_for('evolucao_nova', membro_id=membro.id) }}" class="btn btn-verde">+ Nova evolução</a>
+  <a href="{{ url_for('relatorio_prontuario', membro_id=membro.id) }}" class="btn btn-outline" target="_blank">Imprimir prontuário</a>
+  <form method="post" action="{{ url_for('membro_excluir', membro_id=membro.id) }}" onsubmit="return confirm('Remover este membro e todo o seu prontuário?');" style="display:inline">
+    <button type="submit" class="btn btn-danger">Excluir</button>
+  </form>
+</div>
+
+<div class="tabs">
+  <a href="#dados" class="active" onclick="switchTab(event,'dados')">Dados</a>
+  <a href="#prontuario" onclick="switchTab(event,'prontuario')">Prontuário / Evolução ({{ evolucoes|length }})</a>
+  <a href="#atendimentos" onclick="switchTab(event,'atendimentos')">Atendimentos ({{ atendimentos|length }})</a>
+</div>
+
+<div id="tab-dados" class="tab-panel">
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Dados pessoais</h3>
+      <dl class="info-list">
+        <dt>Parentesco</dt><dd>{{ membro.parentesco or '—' }}</dd>
+        <dt>Data de nasc.</dt><dd>{{ membro.data_nascimento|data_br }} {% if membro.idade is not none %}({{ membro.idade }} anos){% endif %}</dd>
+        <dt>Faixa etária</dt><dd>{{ membro.faixa_etaria }}</dd>
+        <dt>Sexo</dt><dd>{{ membro.sexo or '—' }}</dd>
+        <dt>Identidade gênero</dt><dd>{{ membro.identidade_genero or '—' }}</dd>
+        <dt>Raça/Cor</dt><dd>{{ membro.raca_cor or '—' }}</dd>
+        <dt>Estado Civil</dt><dd>{{ membro.estado_civil or '—' }}</dd>
+        <dt>Nacionalidade</dt><dd>{{ membro.nacionalidade or '—' }}</dd>
+        <dt>Naturalidade</dt><dd>{{ membro.naturalidade_cidade or '—' }}/{{ membro.naturalidade_uf or '' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Documentação</h3>
+      <dl class="info-list">
+        <dt>CPF</dt><dd>{{ membro.cpf or '—' }}</dd>
+        <dt>RG</dt><dd>{{ membro.rg or '—' }} {{ membro.rg_orgao_emissor or '' }}</dd>
+        <dt>NIS</dt><dd>{{ membro.nis or '—' }}</dd>
+        <dt>Título eleitor</dt><dd>{{ membro.titulo_eleitor or '—' }}</dd>
+        <dt>Cert. Nascimento</dt><dd>{{ membro.certidao_nascimento or '—' }}</dd>
+        <dt>Cert. Casamento</dt><dd>{{ membro.certidao_casamento or '—' }}</dd>
+        <dt>CTPS</dt><dd>{{ membro.carteira_trabalho or '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Educação</h3>
+      <dl class="info-list">
+        <dt>Escolaridade</dt><dd>{{ membro.escolaridade or '—' }}</dd>
+        <dt>Frequenta escola?</dt><dd>{{ membro.frequenta_escola|sim_nao }}</dd>
+        <dt>Escola</dt><dd>{{ membro.nome_escola or '—' }}</dd>
+        <dt>Série / Turno</dt><dd>{{ membro.serie or '—' }} / {{ membro.turno or '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Trabalho e Renda</h3>
+      <dl class="info-list">
+        <dt>Ocupação</dt><dd>{{ membro.ocupacao or '—' }}</dd>
+        <dt>Situação</dt><dd>{{ membro.situacao_trabalho or '—' }}</dd>
+        <dt>Renda</dt><dd>{{ membro.renda_individual|moeda }}</dd>
+        <dt>Origem</dt><dd>{{ membro.origem_renda or '—' }}</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>Saúde</h3>
+      <dl class="info-list">
+        <dt>Deficiência</dt><dd>{{ membro.tem_deficiencia|sim_nao }}</dd>
+        <dt>Tipo</dt><dd>{{ membro.tipo_deficiencia or '—' }}</dd>
+        <dt>CID</dt><dd>{{ membro.cid or '—' }}</dd>
+        <dt>Recebe BPC</dt><dd>{{ membro.recebe_bpc|sim_nao }}</dd>
+        <dt>Med. contínua</dt><dd>{{ membro.usa_medicacao_continua|sim_nao }}</dd>
+        <dt>Gestante</dt><dd>{{ membro.gestante|sim_nao }}{% if membro.data_provavel_parto %} (DPP: {{ membro.data_provavel_parto|data_br }}){% endif %}</dd>
+        <dt>Lactante</dt><dd>{{ membro.lactante|sim_nao }}</dd>
+      </dl>
+      {% if membro.medicacoes %}<p><strong>Medicações:</strong><br>{{ membro.medicacoes }}</p>{% endif %}
+      {% if membro.problemas_saude %}<p><strong>Problemas de saúde:</strong><br>{{ membro.problemas_saude }}</p>{% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Vulnerabilidades</h3>
+      <p>
+        {% if membro.situacao_rua %}<span class="badge badge-vermelho">Situação de rua</span>{% endif %}
+        {% if membro.trabalho_infantil %}<span class="badge badge-vermelho">Trabalho infantil</span>{% endif %}
+        {% if membro.exploracao_sexual %}<span class="badge badge-vermelho">Exploração sexual</span>{% endif %}
+        {% if membro.violencia_domestica %}<span class="badge badge-vermelho">Violência doméstica</span>{% endif %}
+        {% if membro.uso_substancias %}<span class="badge badge-amarelo">Uso de substâncias</span>{% endif %}
+        {% if membro.cumpre_medida_socioeducativa %}<span class="badge badge-azul">Medida socioeducativa</span>{% endif %}
+        {% if membro.lgbtqia %}<span class="badge badge-azul">LGBTQIA+</span>{% endif %}
+        {% if membro.imigrante %}<span class="badge badge-azul">Imigrante</span>{% endif %}
+        {% if membro.grupo_tradicional and membro.grupo_tradicional not in ['Nenhum',''] %}<span class="badge badge-verde">{{ membro.grupo_tradicional }}</span>{% endif %}
+      </p>
+    </div>
+
+    <div class="card" style="grid-column:span 2">
+      <h3>Contato e Observações</h3>
+      <dl class="info-list">
+        <dt>Telefone</dt><dd>{{ membro.telefone or '—' }}</dd>
+        <dt>E-mail</dt><dd>{{ membro.email or '—' }}</dd>
+      </dl>
+      {% if membro.observacoes %}<p><strong>Observações:</strong><br>{{ membro.observacoes }}</p>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div id="tab-prontuario" class="tab-panel" style="display:none">
+  <div class="card">
+    <h3>Prontuário Individual — Evolução no tempo</h3>
+    <div class="actions">
+      <a href="{{ url_for('evolucao_nova', membro_id=membro.id) }}" class="btn btn-verde">+ Registrar evolução</a>
+    </div>
+    {% if evolucoes %}
+      <ul class="timeline">
+      {% for ev in evolucoes %}
+        <li>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+            <div>
+              <span class="data">{{ ev.data_evolucao|data_br }}</span>
+              {% if ev.hora_evolucao %}<span style="color:var(--cinza-esc)">{{ ev.hora_evolucao.strftime('%H:%M') }}</span>{% endif %}
+              {% if ev.tipo_evolucao %}<span class="tipo">{{ ev.tipo_evolucao }}</span>{% endif %}
+              {% if ev.tecnico_responsavel %}<br><small>Técnico: <strong>{{ ev.tecnico_responsavel }}</strong>{% if ev.local %} · {{ ev.local }}{% endif %}</small>{% endif %}
+            </div>
+            <div>
+              <a href="{{ url_for('evolucao_editar', evolucao_id=ev.id) }}" class="btn btn-sm btn-outline">Editar</a>
+              <form method="post" action="{{ url_for('evolucao_excluir', evolucao_id=ev.id) }}" onsubmit="return confirm('Excluir esta evolução?');" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+              </form>
+            </div>
+          </div>
+          <div style="margin-top:.6rem;white-space:pre-wrap">{{ ev.descricao }}</div>
+          {% if ev.conduta %}<div style="margin-top:.5rem"><strong>Conduta:</strong> {{ ev.conduta }}</div>{% endif %}
+          {% if ev.encaminhamentos %}<div><strong>Encaminhamentos:</strong> {{ ev.encaminhamentos }}</div>{% endif %}
+          {% if ev.proximos_passos %}<div><strong>Próximos passos:</strong> {{ ev.proximos_passos }}</div>{% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhum registro no prontuário. <a href="{{ url_for('evolucao_nova', membro_id=membro.id) }}">Adicionar o primeiro</a>.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="tab-atendimentos" class="tab-panel" style="display:none">
+  <div class="card">
+    <h3>Atendimentos individuais</h3>
+    {% if atendimentos %}
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Modalidade</th><th>Técnico</th><th>Demanda</th></tr></thead>
+        <tbody>
+        {% for a in atendimentos %}
+          <tr>
+            <td>{{ a.data_atendimento|data_br }}</td>
+            <td>{{ a.tipo_atendimento or '—' }}</td>
+            <td>{{ a.modalidade or '—' }}</td>
+            <td>{{ a.tecnico_responsavel or '—' }}</td>
+            <td>{{ (a.demanda_apresentada or '')[:120] }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% else %}
+      <p>Sem atendimentos individuais registrados.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function switchTab(ev, name){
+  ev.preventDefault();
+  document.querySelectorAll('.tabs a').forEach(a => a.classList.remove('active'));
+  ev.target.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  history.replaceState(null, '', '#'+name);
+}
+(function(){
+  const hash = window.location.hash.substring(1);
+  if(hash){
+    const tab = document.querySelector('.tabs a[href="#'+hash+'"]');
+    if(tab) tab.click();
+  }
+})();
+</script>
+{% endblock %}
