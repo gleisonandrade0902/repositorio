@@ -1,96 +1,122 @@
-# Plant Growth — Plugin de After Effects
+# Plant Growth Animator — Plugin de After Effects
 
-Script (`.jsx`) para o Adobe After Effects que gera uma **planta procedural
-crescendo** dentro da composição ativa. A árvore é construída com um algoritmo
-recursivo estilo L-system, e o crescimento é animado camada por camada usando
-`Trim Paths` em shape layers nativos. Folhas aparecem nas pontas dos galhos
-terminais com uma animação de escala.
+Script (`.jsx`) para o Adobe After Effects que **anima o crescimento de uma
+planta desenhada por você**. Você atribui suas próprias camadas a cada papel
+(caule, raízes, galhos, folhas, frutos) e o script cria as keyframes de
+crescimento na ordem orgânica.
 
 > Arquivo principal: [`PlantGrowth.jsx`](PlantGrowth.jsx)
 
-## Como funciona
+## Modelo
 
-O script cria três coisas para você:
+Você desenha (ou importa) a arte da sua planta como camadas separadas. Aí,
+na janela do script, aponta:
 
-1. **Um null layer** (`Plant Root`) posicionado na base da composição — mova
-   esse null para reposicionar a planta inteira.
-2. **Um shape layer por galho**, com `Trim End` animado de `0` a `100` —
-   é isso que dá o efeito de crescimento.
-3. **Uma folha (elipse)** nas pontas dos galhos terminais, com animação de
-   `Scale` para "brotar" quando o galho termina.
+| Papel      | Obrig.? | Qtd. | Como cresce |
+|------------|:------:|:----:|-------------|
+| **Caule**  | sim | 1  | de baixo pra cima |
+| **Raízes** | não | N  | de cima pra baixo, em paralelo ao caule |
+| **Galhos** | não | N  | escalonados, começam quando o caule já cresceu um pouco |
+| **Folhas** | não | N  | *pop-in* (scale com overshoot) depois dos galhos |
+| **Frutos** | não | N  | *pop-in* no final |
 
-Cada galho filho começa a crescer depois que uma fração do galho pai
-(controlada pelo parâmetro `stagger`) já cresceu — isso dá o efeito de
-progressão orgânica de baixo para cima.
+## Como o script decide a técnica de animação
+
+Para cada camada atribuída, o script escolhe automaticamente:
+
+- **Se for um shape layer com um path** → adiciona (ou reaproveita) um
+  `Trim Paths` e anima `End: 0 → 100`.
+  ⚠️ Desenhe o path começando pela base do crescimento (o pé do caule para
+  o caule; a base do galho para os galhos; a base do talo da raiz para as
+  raízes). O trim segue a direção do path.
+- **Qualquer outra camada** (raster, texto, sólido, footage, precomp) →
+  anima `Scale Y: 0 → 100` com o `Anchor Point` movido pra base correta
+  (bottom para caule/galhos, top para raízes, centro para folhas/frutos).
+  A posição é compensada automaticamente pra imagem não pular.
+
+Isso significa que **funciona igual bem** com plantas vetorizadas no AE ou
+com PNGs desenhados no Photoshop/Illustrator.
 
 ## Instalação
 
-1. Copie o arquivo `PlantGrowth.jsx` para a pasta **Scripts** do After Effects:
-   - **Windows:** `C:\Program Files\Adobe\Adobe After Effects <versão>\Support Files\Scripts\`
-   - **macOS:** `/Applications/Adobe After Effects <versão>/Scripts/`
-2. Reinicie o After Effects.
-3. Habilite scripts com acesso ao modelo de rede em
-   **Edit / Preferences → Scripting & Expressions →
-   Allow Scripts to Write Files and Access Network** (necessário só se você
-   quiser rodar como painel dockável — para uso simples via menu, não é
-   preciso).
+Copie `PlantGrowth.jsx` para uma das pastas:
 
-## Uso
+- **Menu**: `.../After Effects .../Support Files/Scripts/`
+  → Aparece em **File → Scripts → PlantGrowth.jsx**
+- **Painel dockável**: `.../After Effects .../Support Files/Scripts/ScriptUI Panels/`
+  → Aparece em **Window → PlantGrowth.jsx**
 
-1. Abra ou crie uma composição (recomendado 1920×1080, mas funciona em
-   qualquer tamanho).
-2. Rode **File → Scripts → PlantGrowth.jsx**.
-3. Ajuste os parâmetros na janela e clique em **Crescer planta**.
+Para o painel dockável funcionar, ative
+**Edit / Preferences → Scripting & Expressions → Allow Scripts to Write
+Files and Access Network**.
 
-Para rodar como **painel dockável**, coloque o arquivo em
-`Scripts/ScriptUI Panels/` e depois abra em **Window → PlantGrowth.jsx**.
+Reinicie o AE após copiar.
 
-## Parâmetros
+## Fluxo de uso
+
+1. Abra a comp com a arte da planta.
+2. Rode o script.
+3. Para cada papel:
+   - Selecione a(s) camada(s) correspondente(s) na comp.
+   - Clique **Definir da seleção** (caule) ou **Adicionar da seleção**
+     (raízes / galhos / folhas / frutos).
+4. Ajuste **Duração total** e as frações de tempo (opcional).
+5. Clique **Animar crescimento**.
+
+O botão **Remover animação** limpa os keyframes de `Scale` e `Trim Paths`
+de todas as camadas atribuídas — útil pra reanimar com outros tempos.
+
+## Parâmetros de tempo
 
 | Parâmetro | Descrição |
 |---|---|
-| **Iterações** | Profundidade da recursão. Cada nível dobra (ou mais) o número de galhos, então valores > 7 podem ficar lentos. |
-| **Galhos/bifurcação** | Quantos galhos filhos saem de cada ponto. `2` = árvore binária clássica. `3+` = arbusto denso. |
-| **Ângulo (graus)** | Abertura entre os galhos irmãos. |
-| **Variação do ângulo** | Aleatoriedade adicionada ao ângulo — deixa a planta mais orgânica. |
-| **Comprimento base** | Tamanho do tronco em pixels. |
-| **Redução/nível** | Fator multiplicativo do comprimento a cada nível (`0.72` = cada galho tem 72% do tamanho do pai). |
-| **Duração (s)** | Tempo total da animação de crescimento. |
-| **Stagger** | Quanto do galho pai cresce antes do filho começar (`0` = simultâneo, `1` = totalmente sequencial). |
-| **Tamanho da folha** | Tamanho base das folhas nas pontas. |
-| **Seed** | Semente do gerador aleatório — mesma seed sempre produz a mesma planta. |
+| **Início (s)** | Momento absoluto na timeline em que a planta começa. |
+| **Duração total (s)** | Tempo até a planta estar completa (caule + tudo). |
+| **Fração caule** | Fração da duração dedicada ao caule (padrão `0.55`). Raízes crescem no mesmo intervalo. |
+| **Galhos após (0–1)** | Fração do caule que precisa crescer antes de galhos começarem (padrão `0.35`). |
+| **Frutos após (0–1)** | Fração da duração total até frutos começarem a brotar (padrão `0.75`). |
 
-Use o botão **Nova seed** para experimentar variações rapidamente.
+Múltiplos galhos, folhas e frutos são automaticamente **escalonados dentro
+da sua janela de tempo** — se você tem 5 folhas, elas brotam em sequência
+suave em vez de todas ao mesmo tempo.
 
-## Personalização rápida (editando o script)
+## Dicas de arte
 
-No topo do arquivo há um bloco `DEFAULTS` — mude cores ali:
+- **Caule com curva?** Desenhe como shape layer, path começando no chão.
+  O `Trim Paths` respeita a curva perfeitamente.
+- **Galhos angulados?** Cada um pode ser uma camada separada (shape ou
+  raster). Se for raster, coloque a "base" do galho na parte de baixo da
+  camada — o script vai crescer a partir dali.
+- **Folhas em várias posições?** Cada folha é uma camada. Você posiciona
+  onde quer; o script só faz o brotamento no lugar.
+- **Reanimar depois de mexer na arte:** clique **Remover animação** →
+  ajuste → **Animar crescimento** de novo.
 
-```javascript
-leafColor:   [0.30, 0.75, 0.32],   // RGB de 0 a 1
-branchColor: [0.36, 0.22, 0.10],
-```
+## Limitações conhecidas
 
-Para folhas em pontos intermediários (não só nas pontas), duplique a chamada
-`createLeafLayer(...)` no loop principal e remova a condição `if (!hasChild)`.
+- Camadas de câmera / luz / null não fazem sentido como partes da planta e
+  são ignoradas silenciosamente (não têm `sourceRectAtTime`).
+- Para shape layers com **múltiplos paths dentro do mesmo grupo**, o
+  `Trim Paths` afeta todos juntos. Se quiser controle independente, separe
+  em shape layers distintos e atribua cada um como um galho.
+- O script **não conecta parentesco** entre galhos e caule automaticamente.
+  Se você quer que galhos sigam movimento do caule, use pick-whip do AE
+  antes de animar.
 
 ## Alternativas mais avançadas
 
-Este script cobre 90% dos casos com o mínimo de fricção. Se você precisar de
-algo mais robusto:
-
-- **Painel CEP (HTML/CSS/JS):** UI mais rica com sliders em tempo real.
-  Requer habilitar o modo debug de CEP e empacotar em `.zxp`.
+- **Painel CEP (HTML/CSS/JS):** UI mais rica com sliders em tempo real,
+  drag-and-drop de camadas. Requer empacotar `.zxp`.
 - **Plugin nativo C++ (AE SDK):** um efeito aplicável a qualquer camada
-  (`.aex`). Requer Xcode/Visual Studio + o AE SDK oficial da Adobe. Só vale
-  o investimento se você quiser distribuir comercialmente ou precisa de
-  performance em tempo real dentro do render pipeline.
+  (`.aex`). Requer Xcode/Visual Studio + o AE SDK oficial da Adobe. Só
+  vale a complexidade se você quiser distribuir comercialmente.
 
-Peça se quiser que eu evolua este projeto para uma dessas alternativas.
+Peça se quiser que eu evolua este projeto pra uma dessas alternativas.
 
 ## Compatibilidade
 
 Testado conceitualmente contra a API do ExtendScript documentada para
-After Effects CC 2018+. Usa apenas propriedades `matchName` estáveis
-(`ADBE Vector Shape - Group`, `ADBE Vector Filter - Trim`, etc.), então
-deve funcionar em versões futuras sem alteração.
+After Effects CC 2018+. Usa apenas `matchName`s estáveis
+(`ADBE Vector Filter - Trim`, `ADBE Root Vectors Group`, etc.) e a API
+clássica de shape layer, então deve funcionar sem alteração em versões
+futuras.
