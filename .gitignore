@@ -14,3 +14,11 @@ gesuas_local.db
 .vscode/
 *.egg-info/
 instance/
+
+# Gerador de Diário Oficial
+diario_oficial/entrada/*.pdf
+diario_oficial/saida/*.pdf
+diario_oficial/.venv_build/
+diario_oficial/build/
+diario_oficial/dist/
+diario_oficial/*.spec
