@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Editar aluno' if aluno else 'Adicionar aluno' }}</h1>
+<form method="post" class="card" style="max-width:760px">
+  <div class="grid grid-2">
+    <div class="campo">
+      <label for="nome">Nome do candidato *</label>
+      <input type="text" id="nome" name="nome" value="{{ dados.nome or '' }}" required autofocus>
+    </div>
+    <div class="campo">
+      <label for="inscricao">Inscrição</label>
+      <input type="text" id="inscricao" name="inscricao" value="{{ dados.inscricao or '-' }}">
+      <div class="ajuda">Use "-" quando não houver número.</div>
+    </div>
+    <div class="campo">
+      <label for="nascimento">Nascimento</label>
+      <input type="text" id="nascimento" name="nascimento" value="{{ dados.nascimento or '' }}" placeholder="DD/MM/AAAA">
+      <div class="ajuda">Na página publicada o dia é ocultado (**/MM/AAAA).</div>
+    </div>
+    <div class="campo">
+      <label for="data_inscricao">Data da inscrição</label>
+      <input type="text" id="data_inscricao" name="data_inscricao" value="{{ dados.data_inscricao or '' }}" placeholder="DD/MM/AAAA">
+    </div>
+  </div>
+  <div class="campo">
+    <label for="situacao">Situação *</label>
+    <input type="text" id="situacao" name="situacao" value="{{ dados.situacao or '' }}" list="situacoes" required>
+    <datalist id="situacoes">
+      <option value="LISTA DE ESPERA"><option value="MATRICULADO"><option value="MATRICULADA">
+      <option value="F. I"><option value="MUDOU DE CIDADE"><option value="IDADE ACIMA DA FAIXA ETÁRIA PARA A VAGA">
+      <option value="PODE TIRAR O NOME, A MÃE NÃO QUER PRA ESSE ANO MAIS, PEDIU PRA PASSAR VAGA">
+    </datalist>
+    <div class="ajuda">Verde na página: LISTA DE ESPERA, MATRICULADO(A), APTO, CLASSIFICADO(A), APROVADO(A). Todas as outras aparecem em vermelho.</div>
+  </div>
+  <div class="campo">
+    <label for="observacao">Observação publicada (opcional)</label>
+    <textarea id="observacao" name="observacao">{{ dados.observacao or '' }}</textarea>
+    <div class="ajuda">Se preenchida, aparece abaixo da situação na tabela (ex.: "Matricula efetivada conforme os critérios estabelecidos para concessão de vaga, tendo prioridade no atendimento.").</div>
+  </div>
+  <div class="acoes">
+    <button class="btn btn-verde">Salvar</button>
+    <a class="btn btn-cinza" href="{{ url_for('alunos_list') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,26 @@
+{# Tabela de diferenças. Espera: diff = {novos, removidos, alterados, parametros?} #}
+{% if not (diff.novos or diff.removidos or diff.alterados or diff.parametros) %}
+  <p class="vazio">Nenhuma diferença.</p>
+{% else %}
+<table class="tabela">
+  <thead><tr><th style="width:120px">Tipo</th><th>Aluno / item</th><th>Detalhe</th></tr></thead>
+  <tbody>
+  {% for p in diff.parametros or [] %}
+    <tr class="diff-alt"><td><span class="tag tag-alerta">Parâmetro</span></td><td>{{ p.campo }}</td>
+      <td><del>{{ p.de }}</del> &rarr; <ins>{{ p.para }}</ins></td></tr>
+  {% endfor %}
+  {% for a in diff.novos %}
+    <tr class="diff-novo"><td><span class="tag tag-ok">Novo</span></td><td>{{ a.nome }}</td>
+      <td>{{ a.nascimento|mascarar_nascimento }} &middot; {{ a.situacao }}{% if a.data_inscricao %} &middot; inscrito em {{ a.data_inscricao }}{% endif %}</td></tr>
+  {% endfor %}
+  {% for a in diff.alterados %}
+    <tr class="diff-alt"><td><span class="tag tag-alerta">Alterado</span></td><td>{{ a.nome }}</td>
+      <td>{% for m in a.mudancas %}<div><strong>{{ m.campo }}:</strong> <del>{{ m.de or '(vazio)' }}</del> &rarr; <ins>{{ m.para or '(vazio)' }}</ins></div>{% endfor %}</td></tr>
+  {% endfor %}
+  {% for a in diff.removidos %}
+    <tr class="diff-rem"><td><span class="tag tag-nok">Removido</span></td><td>{{ a.nome }}</td>
+      <td>{{ a.nascimento|mascarar_nascimento }} &middot; {{ a.situacao }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Gerar HTML para o site</h1>
+
+<div class="grid grid-2">
+  <form method="post" class="card">
+    <h2>Nova publicação</h2>
+    <p><strong>{{ total }}</strong> alunos &middot; data de corte <strong>{{ cfg.data_corte|data_br }}</strong> &middot; inscrição <strong>{{ cfg.data_corte.year }}</strong></p>
+    <div class="campo">
+      <label for="atualizado_em">Data do "Atualizado dia" *</label>
+      <input type="date" id="atualizado_em" name="atualizado_em" value="{{ hoje.isoformat() }}" required style="max-width:220px">
+    </div>
+    <div class="campo">
+      <label for="responsavel">Responsável pela atualização *</label>
+      <input type="text" id="responsavel" name="responsavel" value="{{ cfg.responsavel_padrao or '' }}" required>
+    </div>
+    <div class="campo">
+      <label for="motivo">Motivo / observação para o log</label>
+      <textarea id="motivo" name="motivo" placeholder="Ex.: inclusão de novos inscritos da semana; matrícula de 2 alunos da lista de espera"></textarea>
+    </div>
+    {% if ultima and not diff.total %}
+      <div class="alerta">Nada mudou desde a atualização nº {{ ultima.id }}. Você pode gerar mesmo assim (por exemplo, só para atualizar a data), e isso também fica no log.</div>
+    {% endif %}
+    <div class="acoes">
+      <button class="btn btn-verde btn-grande" {{ 'disabled' if not total }}>Gerar HTML e registrar no log</button>
+      <a class="btn btn-cinza" href="{{ url_for('previa') }}" target="_blank">Prévia (não registra)</a>
+    </div>
+  </form>
+
+  <div class="card">
+    <h2>O que muda {% if ultima %}desde a nº {{ ultima.id }} ({{ ultima.gerado_em|data_br }}){% else %}(primeira publicação){% endif %}</h2>
+    {% if ultima %}
+      {% include "_diff.html" %}
+    {% else %}
+      <p>Todos os {{ total }} alunos entram como <span class="tag tag-ok">Novo</span> no primeiro registro do log.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Relatório de atualizações — {{ cfg.nome_creche }}{% endblock %}
+{% block content %}
+<div class="acoes nao-imprimir" style="margin-bottom:1rem">
+  <button class="btn" onclick="window.print()">Imprimir / salvar PDF</button>
+  <a class="btn btn-cinza" href="{{ url_for('historico') }}">Voltar</a>
+</div>
+
+<h1>Relatório de atualizações da lista de inscrição — {{ cfg.nome_creche }}</h1>
+<p>
+  Período: {{ de_br or 'início' }} a {{ ate_br or 'hoje' }} &middot;
+  {{ registros|length }} atualização(ões) &middot; emitido em {{ emitido_em.strftime('%d/%m/%Y %H:%M') }}
+</p>
+{% if problemas %}
+  <div class="erro"><strong>A verificação de integridade falhou em {{ problemas|length }} registro(s) do log:</strong>
+    {% for id, erros in problemas.items() %}<div>nº {{ id }}: {{ erros|join('; ') }}</div>{% endfor %}
+  </div>
+{% else %}
+  <div class="sucesso">Integridade verificada: nenhum registro do log foi alterado ou removido desde a sua geração (hash SHA-256 encadeado).</div>
+{% endif %}
+
+<table class="tabela">
+  <thead><tr><th>Nº</th><th>Gerado em</th><th>Responsável</th><th>Corte</th><th class="num">Alunos</th><th class="num">Novos</th><th class="num">Alterados</th><th class="num">Removidos</th></tr></thead>
+  <tbody>
+  {% for r in registros %}
+    <tr><td>{{ r.id }}</td><td class="nowrap">{{ r.gerado_em.strftime('%d/%m/%Y %H:%M:%S') }}</td><td>{{ r.responsavel }}</td><td>{{ r.data_corte|data_br }}</td>
+      <td class="num">{{ r.total_alunos }}</td><td class="num">{{ r.novos|length }}</td><td class="num">{{ r.alterados|length + r.parametros|length }}</td><td class="num">{{ r.removidos|length }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% for r in registros %}
+<div class="card" style="margin-top:1rem">
+  <h2>Atualização nº {{ r.id }} — {{ r.gerado_em.strftime('%d/%m/%Y %H:%M:%S') }}</h2>
+  <p>
+    <strong>Responsável:</strong> {{ r.responsavel }} &middot;
+    <strong>"Atualizado dia":</strong> {{ r.atualizado_em|data_br }} &middot;
+    <strong>Data de corte:</strong> {{ r.data_corte|data_br }} &middot;
+    <strong>Planilha:</strong> {{ r.arquivo_origem or '—' }} &middot;
+    <strong>Total:</strong> {{ r.total_alunos }}
+  </p>
+  {% if r.motivo %}<p><strong>Motivo:</strong> {{ r.motivo }}</p>{% endif %}
+  {% set diff = {'novos': r.novos, 'removidos': r.removidos, 'alterados': r.alterados, 'parametros': r.parametros} %}
+  {% include "_diff.html" %}
+  <p class="mono" style="margin-top:.5rem">SHA-256 do HTML: {{ r.hash_html }}</p>
+</div>
+{% endfor %}
+{% endblock %}

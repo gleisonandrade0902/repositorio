@@ -2,6 +2,8 @@
 
 Sistema local de gestão da assistência social inspirado no GeSUAS, para uso em CRAS, CREAS e equipes técnicas do SUAS. Roda 100% localmente — os dados ficam num arquivo SQLite na própria máquina; não há dependência de servidores externos.
 
+> **Também neste repositório:** [`creche/`](creche/README.md): sistema de inscrições da creche, que gera o HTML da página do portal IPM a partir da planilha de alunos e mantém um log auditável das atualizações.
+
 ## Recursos
 
 - **Cadastro de famílias** com estrutura completa: identificação, endereço, condições de moradia, renda, benefícios (Bolsa Família / Auxílio Brasil, BPC, benefícios eventuais), acompanhamento SUAS (PAIF, PAEFI, SCFV, medida socioeducativa), vulnerabilidades e observações.

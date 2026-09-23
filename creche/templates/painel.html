@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Painel</h1>
+
+<div class="grid grid-4">
+  <div class="stat"><div class="valor">{{ total }}</div><div class="rotulo">alunos na lista atual</div></div>
+  <div class="stat"><div class="valor">{{ cfg.data_corte|data_br }}</div><div class="rotulo">data de corte (inscrição {{ cfg.data_corte.year }})</div></div>
+  <div class="stat"><div class="valor">{{ ultima.atualizado_em|data_br if ultima else '—' }}</div><div class="rotulo">última publicação{% if ultima %} (nº {{ ultima.id }}){% endif %}</div></div>
+  <div class="stat"><div class="valor">{{ total_logs }}</div><div class="rotulo">atualizações registradas no log</div></div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+  <h2>Alterações ainda não publicadas</h2>
+  {% if not ultima %}
+    <div class="alerta">Nenhum HTML foi gerado ainda. Importe a planilha e clique em <strong>Gerar HTML</strong> para criar a primeira publicação.</div>
+  {% elif diff.total %}
+    <div class="alerta">Há <strong>{{ diff.total }}</strong> alteração(ões) desde a atualização nº {{ ultima.id }} ({{ ultima.gerado_em|data_br }}). Gere o HTML para publicar e registrar no log.</div>
+    {% include "_diff.html" %}
+  {% else %}
+    <div class="sucesso">A página publicada está em dia com a lista atual.</div>
+  {% endif %}
+  <div class="acoes" style="margin-top:1rem">
+    <a class="btn" href="{{ url_for('importar') }}">Importar planilha (.xls/.xlsx)</a>
+    <a class="btn btn-cinza" href="{{ url_for('aluno_form') }}">+ Adicionar aluno manualmente</a>
+    <a class="btn btn-verde btn-grande" href="{{ url_for('gerar') }}">Gerar HTML</a>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Situação dos inscritos</h2>
+    {% if por_situacao %}
+    <table class="tabela">
+      <thead><tr><th>Situação</th><th class="num">Qtd.</th></tr></thead>
+      <tbody>
+      {% for situacao, qtd in por_situacao %}
+        <tr><td><span class="tag {{ 'tag-ok' if situacao|classe_status == 'status-ok' else 'tag-nok' }}">{{ situacao }}</span></td><td class="num">{{ qtd }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="vazio">Lista vazia.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Parâmetros da página</h2>
+    <p><strong>Nome:</strong> {{ cfg.nome_creche }}</p>
+    <p><strong>Data de corte:</strong> {{ cfg.data_corte|data_br }}</p>
+    <p><strong>Formulário (18 meses a 3 anos):</strong><br><a class="mono" href="{{ cfg.link_apto }}" target="_blank" rel="noopener">{{ cfg.link_apto }}</a></p>
+    <p><strong>Formulário (menores de 18 meses):</strong><br><a class="mono" href="{{ cfg.link_menor }}" target="_blank" rel="noopener">{{ cfg.link_menor }}</a></p>
+    {% if cfg.ultimo_arquivo %}<p><strong>Última planilha importada:</strong> {{ cfg.ultimo_arquivo }} em {{ cfg.ultima_importacao|data_br }}</p>{% endif %}
+    <a class="btn btn-cinza" href="{{ url_for('configuracoes') }}">Alterar</a>
+  </div>
+</div>
+{% endblock %}

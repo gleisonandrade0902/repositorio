@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Importar planilha de inscritos</h1>
+<div class="grid grid-2">
+  <form method="post" enctype="multipart/form-data" class="card">
+    <h2>Enviar arquivo</h2>
+    <div class="campo">
+      <label for="arquivo">Planilha (.xls, .xlsx ou .csv)</label>
+      <input type="file" id="arquivo" name="arquivo" accept=".xls,.xlsx,.xlsm,.csv" required>
+    </div>
+    <p class="ajuda">Nada é substituído agora: na próxima tela você confere quem entrou, saiu ou mudou antes de confirmar.</p>
+    <button class="btn">Ler planilha</button>
+  </form>
+  <div class="card">
+    <h2>Formato esperado</h2>
+    <p>Primeira aba da planilha, com uma linha de cabeçalho. Colunas reconhecidas (a ordem não importa, acentos e maiúsculas também não):</p>
+    <ul>
+      {% for c in cabecalhos %}<li>{{ c }}</li>{% endfor %}
+    </ul>
+    <p class="ajuda">Só "Nome" é obrigatório. Também são aceitos nomes como "Aluno", "Criança", "Data de nascimento", "Status", "Carimbo de data/hora" (Google Forms). Colunas extras (CPF, endereço, filiação…) são ignoradas e <strong>nunca</strong> vão para a página.</p>
+    <p>A tabela publicada segue a mesma ordem das linhas da planilha.</p>
+    <a class="btn btn-cinza" href="{{ url_for('modelo_planilha') }}">Baixar planilha modelo</a>
+    <a class="btn btn-cinza" href="{{ url_for('alunos_exportar') }}">Baixar lista atual</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,272 @@
+<style>
+    /* --- ESTRUTURA BLINDADA PARA IPM --- */
+    .edu-container {
+        font-family: Arial, Helvetica, sans-serif;
+        color: #333;
+        max-width: 900px;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .edu-header {
+        background-color: #0056b3;
+        color: #ffffff;
+        padding: 30px 15px;
+        text-align: center;
+        border-radius: 7px 7px 0 0;
+    }
+
+    .edu-body { padding: 30px; }
+
+    .section-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+    }
+
+    .info-card {
+        background: #ffffff;
+        border: 1px solid #cccccc;
+        border-bottom: 4px solid #0056b3;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .edu-bullet {
+        width: 40px;
+        height: 8px;
+        background-color: #007bff;
+        margin: 0 auto 15px auto;
+        border-radius: 4px;
+    }
+
+    .card-title {
+        display: block;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #000;
+    }
+
+    .card-desc {
+        font-size: 15px;
+        color: #555;
+        line-height: 1.4;
+    }
+
+    .btn-container { text-align: center; margin-top: 30px; }
+
+    .btn-matricula {
+        background-color: #28a745;
+        color: #ffffff!important;
+        padding: 20px 40px;
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 5px;
+        display: inline-block;
+        border: none;
+        margin: 10px;
+        cursor: pointer;
+    }
+
+    .btn-calc-idade {
+        background-color: #ff9800;
+        color: #ffffff!important;
+        padding: 20px 40px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 5px;
+        display: inline-block;
+        border: none;
+        margin: 10px;
+        cursor: pointer;
+    }
+
+    .btn-lista-toggle {
+        background-color: #007bff;
+        color: #ffffff!important;
+        padding: 20px 40px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 5px;
+        display: inline-block;
+        cursor: pointer;
+        margin: 10px;
+    }
+
+    #lista-check { display: none; }
+
+    .lista-espera-container {
+        display: none;
+        margin-top: 30px;
+        text-align: left;
+    }
+
+    #lista-check:checked ~.lista-espera-container {
+        display: block;
+    }
+
+    .periodo-box {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 25px;
+        border-radius: 5px;
+    }
+
+    .tabela-inscritos {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 13px;
+    }
+
+    .tabela-inscritos th {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .tabela-inscritos td {
+        border-bottom: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .status-ok { color: #28a745; font-weight: bold; }
+    .status-nok { color: #dc3545; font-weight: bold; }
+
+    .tabela-inscritos tr:nth-child(even) { background-color: #f9f9f9; }
+</style>
+<div class="edu-container">
+<div class="edu-header">
+<h1 style="margin: 0; font-size: 26px;">INSCRI&Ccedil;&Atilde;O ESCOLAR 2026 (Atualizado dia 17/09/2026)</h1>
+<h1 style="margin: 0; font-size: 26px;">Creche Municipal Dona L&eacute;a</h1>
+</div>
+<div class="edu-body">
+<h2 class="periodo-box">ESTA INSCRI&Ccedil;&Atilde;O &Eacute; DESTINADA A ALUNOS QUE COMPLETEM 1 ANO E MEIO (18 MESES), 2 ANOS OU 3 ANOS AT&Eacute; <span style="text-decoration: underline;">31/03/2026</span></h2>
+<h2 class="section-title">Crit&eacute;rios de Prioridade</h2>
+<div class="cards-grid">
+<div class="info-card">
+<div class="edu-bullet"></div>
+<span class="card-title">1. Necessidades Especiais</span> <span class="card-desc">Crian&ccedil;as com defici&ecirc;ncia ou transtornos de desenvolvimento.</span></div>
+<div class="info-card">
+<div class="edu-bullet"></div>
+<span class="card-title">2. Medidas de Prote&ccedil;&atilde;o</span> <span class="card-desc">Crian&ccedil;as em situa&ccedil;&atilde;o de risco encaminhadas por &oacute;rg&atilde;os competentes.</span></div>
+<div class="info-card">
+<div class="edu-bullet"></div>
+<span class="card-title">3. Vulnerabilidade Social</span> <span class="card-desc">Fam&iacute;lias inscritas no Cad&Uacute;nico ou em situa&ccedil;&atilde;o de pobreza.</span></div>
+</div>
+<div class="btn-container"><button class="btn-calc-idade" onclick="
+                var d=prompt('Digite a data de nascimento da criança (Ex: 15/05/2024):');
+                if(d){
+                    var p=d.split('/');
+                    if(p.length!=3){
+                        alert('Formato inválido! Use DD/MM/AAAA');
+                    } else {
+                        var n=new Date(p[2], p[1]-1, p[0]);
+                        var c=new Date(2026, 2, 31);
+                        var a=c.getFullYear()-n.getFullYear();
+                        var m=c.getMonth()-n.getMonth();
+                        if(c.getDate()<n.getDate()){m--;}
+                        var mt=(a*12)+m;
+                        var anosCorte = Math.floor(mt/12);
+                        var mesesCorte = mt % 12;
+                        
+                        if(mt < 18){
+                            if(confirm('Idade em 31/03/2026: '+anosCorte+' anos e '+mesesCorte+' meses.\n\nA criança possui menos de 1 ano e 6 meses (18 meses).\n\nGostaria de abrir o formulário específico para esta faixa etária menor?')){
+                                window.open('https://forms.gle/VkN9rkHUMxP1CqLdA', '_blank');
+                            }
+                        } else if(mt >= 48){
+                            alert('Idade em 31/03/2026: '+anosCorte+' anos e '+mesesCorte+' meses.\n\nIDADE ACIMA DO PERMITIDO. A criança já terá 4 anos ou mais. O máximo é 3 anos completos.');
+                        } else {
+                            if(confirm('Idade em 31/03/2026: '+anosCorte+' anos e '+mesesCorte+' meses.\n\nESTÁ APTO PARA INSCRIÇÃO!\n\nGostaria de abrir o formulário de pré-inscrição agora?')){
+                                window.open('https://forms.gle/uZ9oi6YXtaJ81nEb9', '_blank');
+                            }
+                        }
+                    }
+                }
+            "> CALCULAR IDADE DO MEU FILHO </button> <br><br><a class="btn-matricula" href="javascript:void(0);" onclick="
+                var d=prompt('Digite a data de nascimento da criança (Ex: 15/05/2024):');
+                if(d){
+                    var p=d.split('/');
+                    if(p.length!=3){
+                        alert('Formato inválido! Use DD/MM/AAAA');
+                    } else {
+                        var n=new Date(p[2], p[1]-1, p[0]);
+                        var c=new Date(2026, 2, 31);
+                        var a=c.getFullYear()-n.getFullYear();
+                        var m=c.getMonth()-n.getMonth();
+                        if(c.getDate()<n.getDate()){m--;}
+                        var mt=(a*12)+m;
+                        
+                        if(mt < 18){
+                            window.open('https://forms.gle/VkN9rkHUMxP1CqLdA', '_blank');
+                        } else if(mt >= 48){
+                            alert('Sua criança está acima da idade permitida. O máximo é 3 anos completos até 31/03/2026.');
+                        } else {
+                            window.open('https://forms.gle/uZ9oi6YXtaJ81nEb9', '_blank');
+                        }
+                    }
+                }
+            "> CLIQUE AQUI PARA PR&Eacute;-INSCRI&Ccedil;&Atilde;O </a> <br><br><input id="lista-check" type="checkbox"> <label class="btn-lista-toggle" for="lista-check">VER LISTA ATUALIZADA</label>
+<div class="lista-espera-container">
+<h3 style="border-left: 5px solid #0056b3; padding-left: 10px;">Situa&ccedil;&atilde;o dos Alunos Inscritos</h3>
+<table class="tabela-inscritos" style="width: 100.011%;"><colgroup><col><col><col><col><col></colgroup>
+<thead>
+<tr>
+<th style="width: 10%;">Inscri&ccedil;&atilde;o</th>
+<th style="width: 35%;">Nome do Candidato</th>
+<th style="width: 15%;">Nascimento</th>
+<th style="width: 25%;">Situa&ccedil;&atilde;o</th>
+<th style="width: 15%;">Data Inscri&ccedil;&atilde;o</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-</td>
+<td>Jo&atilde;o Exemplo da Concei&ccedil;&atilde;o</td>
+<td>**/03/2025</td>
+<td class="status-nok">F. I</td>
+<td>10/03/2026</td>
+</tr>
+<tr>
+<td>-</td>
+<td>Maria Fict&iacute;cia Ara&uacute;jo</td>
+<td>**/08/2024</td>
+<td class="status-ok">LISTA DE ESPERA</td>
+<td>16/04/2026</td>
+</tr>
+<tr>
+<td>-</td>
+<td>Ana Teste</td>
+<td>**/01/2024</td>
+<td class="status-ok">MATRICULADA</td>
+<td>14/05/2026</td>
+</tr>
+<tr>
+<td>-</td>
+<td>Pedro Modelo</td>
+<td>**/03/2023</td>
+<td>
+<p><span style="font-weight: bold; font-size: 10pt; color: #27ae60;">MATRICULADO</span></p>
+<p>&nbsp;<span style="color: #27ae60; font-weight: bold; font-size: 13px;">Matricula efetivada conforme os crit&eacute;rios estabelecidos para concess&atilde;o de vaga, tendo prioridade no atendimento.</span></p>
+</td>
+<td>10/08/2026</td>
+</tr>
+</tbody>
+</table>
+<p style="font-size: 11px; margin-top: 10px;">*Dados sens&iacute;veis como CPF e filia&ccedil;&atilde;o foram omitidos em conformidade com a LGPD.</p>
+</div>
+</div>
+<p style="font-size: 12px; color: #888; margin-top: 15px;">Ao clicar no formul&aacute;rio e passar pela verifica&ccedil;&atilde;o de idade, voc&ecirc; ser&aacute; levado ao Google Forms Oficial.</p>
+</div>
+</div>

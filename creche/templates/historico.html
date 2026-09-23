@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Log de atualizações</h1>
+
+{% if registros %}
+  {% if problemas %}
+    <div class="erro"><strong>Atenção: verificação de integridade falhou em {{ problemas|length }} registro(s).</strong> O banco foi alterado fora do sistema. Veja a coluna "Integridade".</div>
+  {% else %}
+    <div class="sucesso">Integridade verificada: os {{ registros|length }} registros estão íntegros e encadeados (nenhum foi alterado ou apagado).</div>
+  {% endif %}
+{% endif %}
+
+<form method="get" action="{{ url_for('historico_relatorio') }}" class="card acoes nao-imprimir">
+  <strong>Relatório para a Câmara / fiscalização:</strong>
+  <label for="de" style="margin:0">de</label><input type="date" id="de" name="de" style="max-width:170px">
+  <label for="ate" style="margin:0">até</label><input type="date" id="ate" name="ate" style="max-width:170px">
+  <button class="btn">Gerar relatório (imprimir/PDF)</button>
+  <a class="btn btn-cinza" href="{{ url_for('historico_csv') }}">Exportar log (.csv)</a>
+</form>
+
+{% if registros %}
+<table class="tabela">
+  <thead>
+    <tr><th>Nº</th><th>Gerado em</th><th>Responsável</th><th>Corte</th><th class="num">Alunos</th><th class="num">Novos</th><th class="num">Alterados</th><th class="num">Removidos</th><th>Motivo</th><th>Integridade</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for r in registros %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td class="nowrap">{{ r.gerado_em|data_br }}</td>
+      <td>{{ r.responsavel }}</td>
+      <td class="nowrap">{{ r.data_corte|data_br }}</td>
+      <td class="num">{{ r.total_alunos }}</td>
+      <td class="num">{{ r.novos|length }}</td>
+      <td class="num">{{ r.alterados|length + r.parametros|length }}</td>
+      <td class="num">{{ r.removidos|length }}</td>
+      <td>{{ r.motivo|truncate(60) }}</td>
+      <td>{% if problemas[r.id] %}<span class="tag tag-nok" title="{{ problemas[r.id]|join('; ') }}">violado</span>{% else %}<span class="tag tag-ok">ok</span>{% endif %}</td>
+      <td class="nowrap"><a class="btn btn-cinza btn-mini" href="{{ url_for('historico_detalhe', log_id=r.id) }}">Abrir</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <p class="vazio">Nenhuma atualização registrada ainda.</p>
+{% endif %}
+{% endblock %}

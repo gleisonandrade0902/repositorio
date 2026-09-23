@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Alunos — lista atual ({{ alunos|length }})</h1>
+
+<div class="acoes nao-imprimir" style="margin-bottom:1rem">
+  <form method="get" class="acoes" style="flex:1;min-width:260px">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome ou situação" style="max-width:340px">
+    <button class="btn btn-cinza">Buscar</button>
+    {% if q %}<a href="{{ url_for('alunos_list') }}">limpar</a>{% endif %}
+  </form>
+  <a class="btn btn-cinza" href="{{ url_for('alunos_exportar') }}">Exportar planilha (.xlsx)</a>
+  <a class="btn" href="{{ url_for('aluno_form') }}">+ Adicionar aluno</a>
+  <a class="btn btn-verde" href="{{ url_for('gerar') }}">Gerar HTML</a>
+</div>
+
+<p class="ajuda">A ordem abaixo é a mesma da tabela publicada. Alterações aqui só vão para o site depois de <strong>Gerar HTML</strong>.</p>
+
+{% if alunos %}
+<table class="tabela">
+  <thead>
+    <tr><th>#</th><th>Inscrição</th><th>Nome do candidato</th><th>Nascimento</th><th>Situação</th><th>Data inscrição</th><th class="nao-imprimir">Ações</th></tr>
+  </thead>
+  <tbody>
+  {% for a in alunos %}
+    <tr id="a{{ a.id }}">
+      <td class="num">{{ loop.index }}</td>
+      <td>{{ a.inscricao }}</td>
+      <td>{{ a.nome }}{% if a.observacao %}<div class="ajuda">{{ a.observacao }}</div>{% endif %}</td>
+      <td class="nowrap">{{ a.nascimento }}</td>
+      <td><span class="tag {{ 'tag-ok' if a.situacao|classe_status == 'status-ok' else 'tag-nok' }}">{{ a.situacao }}</span></td>
+      <td class="nowrap">{{ a.data_inscricao }}</td>
+      <td class="nowrap nao-imprimir">
+        {% if not q %}
+        <form class="inline" method="post" action="{{ url_for('aluno_mover', aluno_id=a.id, direcao='cima') }}"><button class="btn btn-cinza btn-mini" title="Subir">&uarr;</button></form>
+        <form class="inline" method="post" action="{{ url_for('aluno_mover', aluno_id=a.id, direcao='baixo') }}"><button class="btn btn-cinza btn-mini" title="Descer">&darr;</button></form>
+        {% endif %}
+        <a class="btn btn-cinza btn-mini" href="{{ url_for('aluno_form', aluno_id=a.id) }}">Editar</a>
+        <form class="inline" method="post" action="{{ url_for('aluno_excluir', aluno_id=a.id) }}" onsubmit="return confirm('Remover {{ a.nome|e }} da lista atual? (o log mantém o histórico)')"><button class="btn btn-vermelho btn-mini">Remover</button></form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alerta">Nenhum aluno. <a href="{{ url_for('importar') }}">Importe a planilha</a> ou <a href="{{ url_for('aluno_form') }}">adicione manualmente</a>.</div>
+{% endif %}
+{% endblock %}

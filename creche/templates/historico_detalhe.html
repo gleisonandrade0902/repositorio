@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Atualização nº {{ reg.id }} — {{ reg.gerado_em.strftime('%d/%m/%Y %H:%M:%S') }}</h1>
+
+<div class="card">
+  <h2>1. Copie o HTML e cole no editor do IPM (modo código-fonte)</h2>
+  <textarea id="html" class="codigo" readonly>{{ reg.html }}</textarea>
+  <div class="acoes" style="margin-top:.5rem">
+    <button class="btn btn-verde btn-grande" type="button" onclick="copiar()">Copiar HTML</button>
+    <a class="btn btn-cinza" href="{{ url_for('historico_download', log_id=reg.id) }}">Baixar .html</a>
+    <a class="btn btn-cinza" href="{{ url_for('historico_visualizar', log_id=reg.id) }}" target="_blank">Abrir em nova aba</a>
+    <span id="copiado" class="tag tag-ok" style="display:none">Copiado!</span>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Dados do registro</h2>
+    <table class="tabela">
+      <tr><th>Gerado em</th><td>{{ reg.gerado_em.strftime('%d/%m/%Y %H:%M:%S') }}</td></tr>
+      <tr><th>"Atualizado dia"</th><td>{{ reg.atualizado_em|data_br }}</td></tr>
+      <tr><th>Responsável</th><td>{{ reg.responsavel }}</td></tr>
+      <tr><th>Motivo</th><td>{{ reg.motivo or '—' }}</td></tr>
+      <tr><th>Data de corte</th><td>{{ reg.data_corte|data_br }}</td></tr>
+      <tr><th>Formulário apto</th><td class="mono">{{ reg.link_apto }}</td></tr>
+      <tr><th>Formulário &lt; 18 meses</th><td class="mono">{{ reg.link_menor }}</td></tr>
+      <tr><th>Planilha de origem</th><td>{{ reg.arquivo_origem or '—' }}</td></tr>
+      <tr><th>Total de alunos</th><td>{{ reg.total_alunos }}</td></tr>
+      <tr><th>SHA-256 do HTML</th><td class="mono">{{ reg.hash_html }}</td></tr>
+      <tr><th>Hash da cadeia</th><td class="mono">{{ reg.hash_cadeia }}</td></tr>
+    </table>
+    <div class="acoes" style="margin-top:.75rem">
+      <a class="btn btn-cinza" href="{{ url_for('historico_lista', log_id=reg.id) }}">Baixar lista deste momento (.xlsx)</a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Alterações nesta atualização</h2>
+    {% set diff = {'novos': reg.novos, 'removidos': reg.removidos, 'alterados': reg.alterados, 'parametros': reg.parametros} %}
+    {% include "_diff.html" %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Pré-visualização</h2>
+  <iframe class="previa" src="{{ url_for('historico_visualizar', log_id=reg.id) }}"></iframe>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copiar() {
+  var t = document.getElementById('html');
+  var ok = function () {
+    var s = document.getElementById('copiado');
+    s.style.display = 'inline-block';
+    setTimeout(function () { s.style.display = 'none'; }, 2500);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(t.value).then(ok);
+  } else {
+    t.select();
+    document.execCommand('copy');
+    ok();
+  }
+}
+</script>
+{% endblock %}

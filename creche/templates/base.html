@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Inscrições da Creche{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="{{ url_for('index') }}">
+        <strong>Inscrições da Creche</strong>
+        <span>{{ cfg.nome_creche }} &middot; data de corte {{ cfg.data_corte|data_br }}</span>
+      </a>
+    </div>
+    {% set ep = request.endpoint or '' %}
+    <nav class="mainnav">
+      <a href="{{ url_for('index') }}" class="{{ 'ativo' if ep == 'index' }}">Painel</a>
+      <a href="{{ url_for('alunos_list') }}" class="{{ 'ativo' if ep.startswith('aluno') }}">Alunos</a>
+      <a href="{{ url_for('importar') }}" class="{{ 'ativo' if ep.startswith('importar') }}">Importar planilha</a>
+      <a href="{{ url_for('gerar') }}" class="{{ 'ativo' if ep == 'gerar' }}">Gerar HTML</a>
+      <a href="{{ url_for('historico') }}" class="{{ 'ativo' if ep.startswith('historico') }}">Log de atualizações</a>
+      <a href="{{ url_for('configuracoes') }}" class="{{ 'ativo' if ep == 'configuracoes' }}">Configurações</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <small>Sistema local de inscrições &middot; os dados ficam em <code>creche.db</code> nesta máquina &middot; LGPD: a página publicada mostra só mês/ano de nascimento</small>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

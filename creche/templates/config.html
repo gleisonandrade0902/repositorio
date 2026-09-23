@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Configurações da página</h1>
+{% set f = form or {} %}
+<form method="post" class="card" style="max-width:760px">
+  <div class="campo">
+    <label for="data_corte">Data de corte *</label>
+    <input type="date" id="data_corte" name="data_corte" value="{{ f.data_corte or cfg.data_corte.isoformat() }}" required style="max-width:220px">
+    <div class="ajuda">Ex.: 31/03/2027. Entra no aviso "…ATÉ <u>31/03/2027</u>", no cálculo de idade dos dois botões e no título "INSCRIÇÃO ESCOLAR 2027" (o ano vem da data de corte).</div>
+  </div>
+  <div class="campo">
+    <label for="link_apto">Link do formulário — crianças aptas (18 meses a 3 anos) *</label>
+    <input type="url" id="link_apto" name="link_apto" value="{{ f.link_apto or cfg.link_apto }}" required>
+  </div>
+  <div class="campo">
+    <label for="link_menor">Link do formulário — crianças com menos de 18 meses *</label>
+    <input type="url" id="link_menor" name="link_menor" value="{{ f.link_menor or cfg.link_menor }}" required>
+  </div>
+  <div class="campo">
+    <label for="nome_creche">Nome da creche *</label>
+    <input type="text" id="nome_creche" name="nome_creche" value="{{ f.nome_creche or cfg.nome_creche }}" required>
+  </div>
+  <div class="campo">
+    <label for="responsavel_padrao">Responsável padrão pelas atualizações</label>
+    <input type="text" id="responsavel_padrao" name="responsavel_padrao" value="{{ f.responsavel_padrao or cfg.responsavel_padrao or '' }}">
+    <div class="ajuda">Vem preenchido na tela "Gerar HTML" e fica gravado em cada registro do log.</div>
+  </div>
+  <p class="ajuda">Mudanças aqui aparecem como "Parâmetro" no próximo registro do log.</p>
+  <div class="acoes">
+    <button class="btn btn-verde">Salvar</button>
+    <a class="btn btn-cinza" href="{{ url_for('index') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

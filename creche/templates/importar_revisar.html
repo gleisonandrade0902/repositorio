@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Conferir importação — {{ pendente.arquivo }}</h1>
+
+<div class="grid grid-4">
+  <div class="stat"><div class="valor">{{ pendente.registros|length }}</div><div class="rotulo">alunos na planilha</div></div>
+  <div class="stat"><div class="valor">{{ diff.novos|length }}</div><div class="rotulo">novos</div></div>
+  <div class="stat"><div class="valor">{{ diff.alterados|length }}</div><div class="rotulo">alterados</div></div>
+  <div class="stat"><div class="valor">{{ diff.removidos|length }}</div><div class="rotulo">sairão da lista</div></div>
+</div>
+
+{% if pendente.avisos %}
+<div class="alerta" style="margin-top:1rem">
+  <strong>{{ pendente.avisos|length }} aviso(s) — confira antes de confirmar:</strong>
+  <ul>{% for a in pendente.avisos %}<li>{{ a }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:1rem">
+  <h2>Diferenças em relação à lista atual</h2>
+  {% include "_diff.html" %}
+</div>
+
+<div class="card">
+  <details>
+    <summary>Ver todos os {{ pendente.registros|length }} alunos lidos</summary>
+    <table class="tabela" style="margin-top:.5rem">
+      <thead><tr><th>#</th><th>Inscrição</th><th>Nome</th><th>Nascimento</th><th>Situação</th><th>Data inscrição</th></tr></thead>
+      <tbody>
+      {% for a in pendente.registros %}
+        <tr><td class="num">{{ loop.index }}</td><td>{{ a.inscricao }}</td><td>{{ a.nome }}{% if a.observacao %}<div class="ajuda">{{ a.observacao }}</div>{% endif %}</td>
+          <td class="nowrap">{{ a.nascimento }}</td><td>{{ a.situacao }}</td><td class="nowrap">{{ a.data_inscricao }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+</div>
+
+<div class="acoes">
+  <form method="post" action="{{ url_for('importar_confirmar') }}" class="inline">
+    <button class="btn btn-verde btn-grande">Confirmar e substituir a lista atual</button>
+  </form>
+  <form method="post" action="{{ url_for('importar_cancelar') }}" class="inline">
+    <button class="btn btn-cinza">Descartar</button>
+  </form>
+</div>
+{% endblock %}
