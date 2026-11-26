@@ -1,4 +1,10 @@
 modelos/
+dados/
+capturas/
 dono.npy
-sentinela.log
+dono.npy.migrado
+*.log
 __pycache__/
+.venv/
+config.tmp
+config.json

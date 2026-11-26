@@ -1,47 +1,73 @@
-# Sentinela de Tela
+# Sentinela de Tela — Modo Pro
 
-Mantém a tela ligada **somente enquanto o dono está olhando**. Usa a webcam + reconhecimento facial leve (OpenCV YuNet + SFace).
+Mantém a tela ligada **somente enquanto uma pessoa autorizada está olhando**, bloqueia o computador quando outra pessoa senta na frente e **fotografa quem tentar acessar** — inclusive quem digitar a senha errada na tela de bloqueio.
+
+Reconhecimento facial leve com OpenCV (YuNet + SFace). Processo completo (motor + painel): **~185 MB de RAM**.
+
+## O que ele faz
 
 | Situação | Ação |
 |---|---|
-| Dono olhando para a tela | Tela permanece ligada (bloqueia o descanso de tela) |
-| Ninguém por `segundos_para_desligar_tela` | Desliga a tela |
-| Dono volta | Liga a tela |
-| Outra pessoa sem o dono (confirmada `verificacoes_para_estranho` vezes) | **Bloqueia** o computador |
-| Ausente por `minutos_para_bloquear` | **Bloqueia** o computador |
+| Pessoa autorizada olhando | Tela permanece ligada |
+| Ninguém por N segundos | Desliga a tela |
+| Pessoa autorizada volta | Liga a tela |
+| Pessoa **não cadastrada** diante do PC desbloqueado | 📸 Foto + **bloqueia** |
+| Ausência por X minutos | **Bloqueia** |
+| Pessoa não cadastrada parada **na tela de bloqueio** | 📸 Foto |
+| **Senha incorreta** digitada na tela de bloqueio *(Windows)* | 📸 Foto no instante da falha |
+| Você desbloqueia e houve tentativas | ⚠ Alerta com a foto de quem tentou |
 
-Medido: **~150 MB de RAM**, ~25 ms por análise (3 análises/s, 1 thread de CPU).
+## Painel (Modo Pro)
+
+- **Painel** — status em tempo real, quem está diante da tela, memória, câmera ao vivo, atividade recente, *Pausar* / *Bloquear agora*.
+- **Pessoas** — cadastro de várias pessoas com captura ao vivo e barra de progresso; recadastrar, renomear, ativar/desativar, excluir.
+- **Tentativas de acesso** — lista com foto, data/hora e tipo; filtros; não vistas em destaque; salvar cópia, abrir pasta, excluir.
+- **Configurações** — todos os tempos e regras, PIN do painel, iniciar com o Windows, ativação da foto por senha incorreta.
+- **Ícone na bandeja** — fechar a janela mantém a proteção ativa; menu com Abrir / Pausar / Bloquear / Encerrar.
+- **PIN do painel** — protege abrir o painel, pausar, encerrar, mudar cadastros e configurações. Ao bloquear o PC, o painel se esconde e só reabre com PIN.
 
 ## Instalação (Windows)
-Dê dois cliques em `iniciar.bat`. Na primeira vez ele cria o ambiente, baixa os modelos (~39 MB) e pede o cadastro do rosto.
 
-## Manual (Windows / Linux / macOS)
+1. Instale o **Python 3.10+** marcando *Add python.exe to PATH*.
+2. Dê dois cliques em **`iniciar.bat`**. Na primeira vez ele cria o ambiente e abre o painel pedindo o seu cadastro.
+3. *(Recomendado)* **Configurações → Foto ao digitar senha incorreta → Ativar** (pede administrador **uma única vez**).
+4. *(Recomendado)* Defina um **PIN** e marque **Iniciar automaticamente**.
+
+Quem já usava a versão 1: o `dono.npy` é importado automaticamente como a pessoa "Dono".
+
+### Como funciona a foto da senha incorreta
+O Windows registra cada senha errada como **evento 4625**. O `configurar_senha_incorreta.bat` liga essa auditoria e cria uma tarefa agendada (conta SYSTEM) que anota cada falha em `%ProgramData%\SentinelaTela\falhas_login.log`. O Sentinela vê o arquivo crescer e tira a foto na hora — **sem precisar rodar como administrador**. Para desfazer: `configurar_senha_incorreta.bat remover` (como admin).
+
+Mesmo sem isso, com *Vigiar a tela de bloqueio* ligado, qualquer rosto não cadastrado que fique diante da tela bloqueada é fotografado.
+
+## Linha de comando (sem painel)
 ```bash
-python -m venv .venv && .venv/bin/pip install -r requirements.txt   # Windows: .venv\Scripts\...
-python baixar_modelos.py
-python sentinela.py cadastrar      # fique sozinho(a) diante da câmera, boa luz
-python sentinela.py --preview      # 1º teste: mostra caixas DONO/OUTRO e a similaridade
-python sentinela.py                # uso normal
+python sentinela.py cadastrar --nome "Maria"
+python sentinela.py
 ```
-Iniciar com o Windows: atalho de `iniciar.bat` em `shell:startup` (Win+R).
 
-## Ajustes (`config.json`)
-- `limiar_reconhecimento` (0.40): subir = mais rígido (menos risco de aceitar outra pessoa, mais falso "estranho"). Calibre com `--preview`.
-- `exigir_olhar_para_tela`: dono de cabeça virada conta como "não olhando" (tela desliga após o tempo de graça).
-- `bloquear_estranho_mesmo_com_dono`: `true` bloqueia se alguém aparecer **atrás** de você.
-- `limite_memoria_mb` (300): ver abaixo.
+## Arquivos
+| Arquivo | Função |
+|---|---|
+| `app.py` | Inicia o painel (instância única) |
+| `interface.py` | Telas (Tkinter) e ícone da bandeja |
+| `nucleo.py` | Motor: decisões, vigilância da tela de bloqueio, fotos |
+| `visao.py` | Detecção e reconhecimento facial |
+| `banco.py` | SQLite: pessoas e eventos (`dados/sentinela.db`) |
+| `sistema.py` | Tela, bloqueio, inicialização automática (Windows/Linux/macOS) |
+| `config.py` | Configurações e PIN (`config.json`) |
+| `capturas/` | Fotos das tentativas |
 
-## Se precisar de mais de 300 MB
-O programa monitora o próprio consumo a cada 10 s. Ao passar do limite ele, em degraus: força coleta de lixo → reduz resolução de análise (320→256→192→160 px) → reduz frequência (3→2→1 análise/s), registrando no `sentinela.log`. Se mesmo assim passar, causas típicas e soluções:
-1. **`opencv-python` completo** (~80 MB a mais por GUI/Qt): use `opencv-python-headless` (perde só o `--preview`).
-2. **Muitos rostos na imagem**: só os 3 maiores são reconhecidos (`max_rostos` em `visao.py`).
-3. **Vazamento de driver de câmera**: o programa reabre a câmera ao falhar; atualizar o driver resolve.
-4. Como último recurso, trocar SFace por modelo quantizado int8 (`face_recognition_sface_2021dec_int8.onnx`, ~10 MB, um pouco menos preciso).
+## Memória (limite 300 MB)
+Monitorada a cada 10 s. Se passar do limite: coleta de lixo → menor resolução de análise (320→160 px) → menos análises por segundo. Se ainda precisar: troque `opencv-python` por `opencv-python-headless`, ou remova `pystray`/`pillow` (perde só o ícone da bandeja; fechar a janela passa a minimizar).
 
 ## Privacidade (LGPD)
-Nenhuma imagem é gravada. `dono.npy` guarda apenas vetores numéricos (biometria derivada — dado sensível, art. 5º II): fica só nesta máquina e está no `.gitignore`. Apague-o para revogar.
+- Pessoas cadastradas: **nenhuma foto é guardada**, só vetores numéricos (biometria — dado sensível, art. 5º II). Ficam apenas neste computador.
+- Fotos de tentativas: ficam em `capturas/`, apagadas automaticamente após `dias_retencao_fotos` (padrão 30). Uso recomendado: proteção do próprio equipamento; informe as pessoas do ambiente (ex.: aviso visível) se for um PC compartilhado ou corporativo.
+- `config.json` guarda o PIN apenas como hash (PBKDF2).
 
-## Limitações honestas
-- **Não tem prova de vida**: uma foto do dono pode enganar o reconhecimento. É uma camada de conveniência/privacidade, **não** substitui senha/Windows Hello.
-- Linux: desligar a tela usa `xset` (X11). Em Wayland, só o bloqueio (`loginctl`) é garantido.
-- O LED da webcam fica aceso enquanto monitora (é desligado durante o bloqueio).
+## Limitações
+- **Sem prova de vida**: uma foto da pessoa autorizada pode enganar o reconhecimento. É uma camada extra — **não substitui** a senha / Windows Hello.
+- Se o Windows Hello usar a **mesma câmera RGB**, a vigilância da tela de bloqueio pode disputar a câmera. Câmeras IR (Hello) não conflitam.
+- À noite, com a tela de bloqueio escura, as fotos podem sair escuras.
+- Linux: desligar a tela usa `xset` (X11); foto por senha incorreta só no Windows.

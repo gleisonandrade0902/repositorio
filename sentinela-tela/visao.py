@@ -1,7 +1,7 @@
 """
 Detecção (YuNet) e reconhecimento facial (SFace) usando apenas OpenCV.
 
-Por que esses modelos: juntos somam ~37 MB em disco e rodam em CPU com
+Por que esses modelos: juntos somam ~39 MB em disco e rodam em CPU com
 1 thread, mantendo o processo bem abaixo de 300 MB de RAM. Alternativas
 como dlib/face_recognition ou DeepFace (TensorFlow) passam de 500 MB.
 """
@@ -19,9 +19,11 @@ MODELO_RECONHECEDOR = PASTA_MODELOS / "face_recognition_sface_2021dec.onnx"
 @dataclass
 class Rosto:
     caixa: tuple          # x, y, w, h (na escala do frame original)
-    similaridade: float   # cosseno com o dono (−1..1); 0 se não comparado
-    eh_dono: bool
+    similaridade: float   # melhor cosseno contra as pessoas cadastradas
+    autorizado: bool
     olhando: bool         # rosto razoavelmente frontal
+    nome: str = ""        # nome da pessoa reconhecida ("" = desconhecido)
+    pessoa_id: int = 0
 
 
 class Visao:
@@ -37,12 +39,26 @@ class Visao:
         self.detector = cv2.FaceDetectorYN.create(
             str(MODELO_DETECTOR), "", (320, 240), limiar_deteccao, 0.3, 20)
         self.reconhecedor = cv2.FaceRecognizerSF.create(str(MODELO_RECONHECEDOR), "")
-        self.assinaturas_dono = None  # np.ndarray (N, 128), L2-normalizado
+        self._matriz = np.empty((0, 128), np.float32)  # todas as assinaturas empilhadas
+        self._rotulos = np.empty(0, np.int64)          # índice da pessoa de cada linha
+        self._pessoas = []                             # [(id, nome)]
 
     # ------------------------------------------------------------------
-    def carregar_dono(self, caminho: Path):
-        emb = np.load(caminho).astype(np.float32)
-        self.assinaturas_dono = emb / np.linalg.norm(emb, axis=1, keepdims=True)
+    def carregar_pessoas(self, pessoas):
+        """pessoas: [(id, nome, ndarray(N,128))]"""
+        mats, rot, lista = [], [], []
+        for i, (pid, nome, emb) in enumerate(pessoas):
+            emb = emb.astype(np.float32)
+            mats.append(emb / np.linalg.norm(emb, axis=1, keepdims=True))
+            rot.append(np.full(len(emb), i))
+            lista.append((pid, nome))
+        self._matriz = np.vstack(mats) if mats else np.empty((0, 128), np.float32)
+        self._rotulos = np.concatenate(rot) if rot else np.empty(0, np.int64)
+        self._pessoas = lista
+
+    @property
+    def total_pessoas(self):
+        return len(self._pessoas)
 
     def _reduzir(self, frame):
         h, w = frame.shape[:2]
@@ -77,8 +93,7 @@ class Visao:
         dist_olhos = abs(ox2 - ox1)
         if dist_olhos < 1:
             return False
-        desvio = abs(nx - (ox1 + ox2) / 2) / dist_olhos
-        return desvio <= yaw_max
+        return bool(abs(nx - (ox1 + ox2) / 2) / dist_olhos <= yaw_max)
 
     def analisar(self, frame, max_rostos=3):
         pequeno, escala, faces = self.detectar(frame)
@@ -87,11 +102,24 @@ class Visao:
             faces = faces[np.argsort(-faces[:, 2] * faces[:, 3])[:max_rostos]]
         rostos = []
         for f in faces:
-            sim = 0.0
-            if self.assinaturas_dono is not None:
-                emb = self.assinatura(pequeno, f)
-                sim = float(np.max(self.assinaturas_dono @ emb))
+            sim, nome, pid = 0.0, "", 0
+            if len(self._matriz):
+                sims = self._matriz @ self.assinatura(pequeno, f)
+                k = int(np.argmax(sims))
+                sim = float(sims[k])
+                if sim >= self.limiar_rec:
+                    pid, nome = self._pessoas[self._rotulos[k]]
             caixa = tuple(int(v / escala) for v in f[:4])
-            rostos.append(Rosto(caixa, sim, sim >= self.limiar_rec,
-                                bool(self._olhando(f, self.yaw_max))))
+            rostos.append(Rosto(caixa, sim, bool(pid), self._olhando(f, self.yaw_max), nome, pid))
         return rostos
+
+
+def desenhar(frame, rostos):
+    """Marca os rostos no frame (usado no preview e nas fotos de evidência)."""
+    for r in rostos:
+        x, y, w, h = r.caixa
+        cor = (60, 200, 60) if r.autorizado else (40, 40, 230)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), cor, 2)
+        txt = f"{r.nome or 'DESCONHECIDO'} {r.similaridade:.2f}" + ("" if r.olhando else " (virado)")
+        cv2.putText(frame, txt, (x, max(14, y - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, cor, 1, cv2.LINE_AA)
+    return frame

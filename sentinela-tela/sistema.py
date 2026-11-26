@@ -134,3 +134,74 @@ else:
             r = _run(["bash", "-c",
                       "loginctl show-session $(loginctl | awk '/'$USER'/{print $1;exit}') -p LockedHint --value"])
         return bool(r and r.stdout.strip() == "yes")
+
+
+# --------------------------------------------------------------------------
+# Recursos do Modo Pro (comuns a todas as plataformas)
+# --------------------------------------------------------------------------
+import os
+import sys
+from pathlib import Path
+
+NOME_APP = "SentinelaTela"
+
+
+def contar_falhas_login(arquivo: Path) -> int:
+    """Quantas falhas de logon a tarefa agendada (evento 4625) já registrou.
+
+    O arquivo é escrito por uma tarefa do Agendador rodando como SYSTEM,
+    criada uma única vez por configurar_senha_incorreta.bat (admin). Assim o
+    app NÃO precisa rodar como administrador para saber da falha.
+    """
+    try:
+        with open(arquivo, "rb") as f:
+            return f.read().count(b"\n")
+    except OSError:
+        return -1  # recurso não configurado
+
+
+def iniciar_com_sistema(ativo: bool, script: Path):
+    """Registra/remove a inicialização automática do painel no login."""
+    pyw = Path(sys.executable)
+    if SO == "Windows":
+        import winreg
+        if pyw.name.lower() == "python.exe":
+            pyw = pyw.with_name("pythonw.exe")  # sem janela de console
+        chave = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                               r"Software\Microsoft\Windows\CurrentVersion\Run", 0,
+                               winreg.KEY_SET_VALUE)
+        with chave:
+            if ativo:
+                winreg.SetValueEx(chave, NOME_APP, 0, winreg.REG_SZ,
+                                  f'"{pyw}" "{script}" --minimizado')
+            else:
+                try:
+                    winreg.DeleteValue(chave, NOME_APP)
+                except FileNotFoundError:
+                    pass
+    elif SO == "Linux":
+        destino = Path.home() / ".config" / "autostart" / f"{NOME_APP}.desktop"
+        if ativo:
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_text("[Desktop Entry]\nType=Application\nName=Sentinela de Tela\n"
+                               f'Exec="{pyw}" "{script}" --minimizado\nX-GNOME-Autostart-enabled=true\n')
+        else:
+            destino.unlink(missing_ok=True)
+    else:
+        log.info("Inicialização automática no macOS: adicione em Ajustes > Itens de Início")
+
+
+def abrir_pasta(caminho: Path):
+    if SO == "Windows":
+        os.startfile(str(caminho))
+    else:
+        _run(["open" if SO == "Darwin" else "xdg-open", str(caminho)])
+
+
+def executar_como_admin(arquivo: Path) -> bool:
+    """Abre o .bat pedindo elevação (UAC). Só Windows."""
+    if SO != "Windows":
+        return False
+    r = ctypes.windll.shell32.ShellExecuteW(None, "runas", str(arquivo), None,
+                                            str(arquivo.parent), 1)
+    return r > 32
